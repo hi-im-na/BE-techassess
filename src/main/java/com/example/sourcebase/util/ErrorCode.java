@@ -16,7 +16,7 @@ public enum ErrorCode {
     USER_NOT_EXISTS(409, "User Not Exists", HttpStatus.CONFLICT),
     ID_NOT_EXISTS(409, "Id Not Exists", HttpStatus.CONFLICT),
     ILLEGAL_STATE(400, "Wrong password or username", HttpStatus.BAD_REQUEST),
-    ILLEGAL_ARGUMENT(409, "Email, Phone or Username Already Exists", HttpStatus.CONFLICT),
+    MAIL_PHONE_USERNAME_ALREADY_EXISTED(409, "Email, Phone or Username Already Exists", HttpStatus.CONFLICT),
     VALIDATION_ERROR(400, "", HttpStatus.BAD_REQUEST),
     USERNAME_EXISTS(409, "Username Exists", HttpStatus.CONFLICT),
 
@@ -41,6 +41,9 @@ public enum ErrorCode {
     DEPARTMENT_NOT_FOUND(40403, "Department not found", HttpStatus.NOT_FOUND),
     DEPARTMENT_ALREADY_EXIST(40904, "Department already exist", HttpStatus.CONFLICT),
 
+    MANAGER_ASSESS_IS_NOT_EXIST(40404, "Không có đánh giá của quản lý", HttpStatus.NOT_FOUND),
+
+    CRITERIA_ID_NOT_MATCH(40905, "Criteria id not match", HttpStatus.CONFLICT),
     ;
     int code;
     String message;
