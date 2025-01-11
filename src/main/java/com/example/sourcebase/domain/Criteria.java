@@ -4,6 +4,7 @@ import com.example.sourcebase.domain.enumeration.ETypeCriteria;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +33,7 @@ public class Criteria {
     List<Question> questions;
 
     @Column(name = "is_deleted", nullable = false)
+    @ColumnDefault("false")
     private boolean isDeleted = false;
 
     @OneToMany(mappedBy = "criteria", fetch = FetchType.LAZY)

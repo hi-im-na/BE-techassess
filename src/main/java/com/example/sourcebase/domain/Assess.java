@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -39,4 +40,7 @@ public class Assess {
 
     @OneToMany(mappedBy = "assess", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<AssessDetail> assessDetails;
+
+    @ColumnDefault("false")
+    boolean submitted;
 }

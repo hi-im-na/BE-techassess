@@ -4,6 +4,7 @@ package com.example.sourcebase.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.List;
 import java.util.Set;
@@ -31,6 +32,7 @@ public class Question {
     List<Answer> answers;
 
     @Column(name = "is_deleted", nullable = false)
+    @ColumnDefault("false")
     private boolean isDeleted = false;
 
     @OneToMany(mappedBy = "question")
