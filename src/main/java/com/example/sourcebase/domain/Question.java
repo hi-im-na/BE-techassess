@@ -18,7 +18,7 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Question {
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     String title;
@@ -35,7 +35,6 @@ public class Question {
     @ColumnDefault("false")
     private boolean isDeleted = false;
 
-    @OneToMany(mappedBy = "question")
-
+    @OneToMany(mappedBy = "question" , fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     Set<DepartmentCriterias> departmentCriterias;
 }

@@ -6,7 +6,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +35,6 @@ public class Criteria {
     @ColumnDefault("false")
     private boolean isDeleted = false;
 
-    @OneToMany(mappedBy = "criteria", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "criteria", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     Set<DepartmentCriterias> departmentCriterias;
 }
