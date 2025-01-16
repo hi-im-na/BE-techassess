@@ -1,20 +1,13 @@
 package com.example.sourcebase.domain.dto.reqdto;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.AssertTrue;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Getter
 @Setter
@@ -27,6 +20,7 @@ public class ProjectReqDTO {
      LocalDate startDay;
 
      LocalDate endDay;
-List<Long> employeeIds;
+     Long departmentId;
+     List<Long> employeeIds;
 
 }
