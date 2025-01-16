@@ -4,28 +4,23 @@ import com.example.sourcebase.domain.dto.reqdto.AddQuestionReqDto;
 import com.example.sourcebase.domain.dto.reqdto.QuestionReqDto;
 import com.example.sourcebase.domain.dto.resdto.QuestionResDTO;
 import com.example.sourcebase.service.IQuestionService;
-import com.example.sourcebase.service.IUserService;
 import com.example.sourcebase.util.ErrorCode;
 import com.example.sourcebase.util.ResponseData;
 import com.example.sourcebase.util.SuccessCode;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @RestController
 @RequestMapping("/api/questions")
 @AllArgsConstructor
+@CrossOrigin(origins = {"http://192.168.0.152:5000", "http://192.168.0.152:6123"})
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 public class QuestionRestController {
     IQuestionService questionService;

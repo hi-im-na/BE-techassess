@@ -1,10 +1,8 @@
 package com.example.sourcebase.controller;
 
-import com.example.sourcebase.exception.AppException;
 import com.example.sourcebase.domain.dto.reqdto.DepartmentReqDTO;
 import com.example.sourcebase.domain.dto.resdto.DepartmentResDTO;
 import com.example.sourcebase.exception.AppException;
-import com.example.sourcebase.domain.dto.reqdto.DepartmentReqDTO;
 import com.example.sourcebase.service.IDepartmentService;
 import com.example.sourcebase.util.ResponseData;
 import com.example.sourcebase.util.SuccessCode;
@@ -21,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/departments")
+@CrossOrigin(origins = {"http://192.168.0.152:5000", "http://192.168.0.152:6123"})
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Validated
