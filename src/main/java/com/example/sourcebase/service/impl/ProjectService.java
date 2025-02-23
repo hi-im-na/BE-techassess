@@ -156,13 +156,13 @@ public class ProjectService implements IProjectService {
 
         LocalDate currentDate = LocalDate.now();
 
-        if (!projectReqDTO.getStartDay().isAfter(currentDate)) {
+        if (projectReqDTO.getStartDay().isAfter(currentDate)) {
             throw new AppException(ErrorCode.INVALID_START_DATE);
         }
-        if (!projectReqDTO.getEndDay().isAfter(currentDate)) {
+        if (projectReqDTO.getEndDay().isBefore(currentDate)) {
             throw new AppException(ErrorCode.INVALID_END_DATE);
         }
-        if (!projectReqDTO.getEndDay().isAfter(projectReqDTO.getStartDay())) {
+        if (projectReqDTO.getEndDay().isBefore(projectReqDTO.getStartDay())) {
             throw new AppException(ErrorCode.END_DATE_BEFORE_START_DATE);
         }
     }
