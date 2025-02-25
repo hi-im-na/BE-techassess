@@ -23,9 +23,19 @@ public class Department {
     @Column(nullable = false)
     boolean deleted = false;
 
-    @OneToMany(mappedBy = "department", fetch = FetchType.EAGER)
-    Set<DepartmentCriterias> departmentCriterias;
+    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
+    Set<Criteria> criterias;
 
     @OneToMany(mappedBy = "department")
     Set<Project> projects;
+
+    public void addCriteria(Criteria criteria) {
+        criterias.add(criteria);
+        criteria.setDepartment(this);
+    }
+
+    public void addProject(Project project) {
+        projects.add(project);
+        project.setDepartment(this);
+    }
 }

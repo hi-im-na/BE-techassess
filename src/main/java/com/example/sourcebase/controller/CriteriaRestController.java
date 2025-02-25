@@ -1,7 +1,6 @@
 package com.example.sourcebase.controller;
 
 import com.example.sourcebase.domain.dto.reqdto.CriteriaReqDTO;
-import com.example.sourcebase.domain.dto.reqdto.DepartmentCriteriasReqDto;
 import com.example.sourcebase.domain.dto.reqdto.post.AddCriterionToDepartmentReqDto;
 import com.example.sourcebase.domain.dto.reqdto.put.UpdateCriterionInDepartmentReqDto;
 import com.example.sourcebase.service.ICriteriaService;
@@ -75,19 +74,13 @@ public class CriteriaRestController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping
-    public ResponseEntity<ResponseData<?>> deleteCriterionByCriteriaIdAndDepartmentId(@RequestBody DepartmentCriteriasReqDto dcReqDto) {
-        criteriaService.deleteCriterionByCriteriaIdAndDepartmentId(dcReqDto.getCriteriaId(), dcReqDto.getDepartmentId());
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/{id}/{departmentId}")
     public ResponseEntity<ResponseData<?>> getCriterionById(@PathVariable Long id, @PathVariable Long departmentId) {
         return ResponseEntity.ok(
                 ResponseData.builder()
                         .code(SuccessCode.GET_SUCCESSFUL.getCode())
                         .message(SuccessCode.GET_SUCCESSFUL.getMessage())
-                        .data(criteriaService.getCriteriaById(id, departmentId))
+                        .data(criteriaService.getCriteriaById(id))
                         .build());
     }
 
@@ -117,16 +110,6 @@ public class CriteriaRestController {
                                 .updateCriterionInDepartment(dcReqDto.getCriteriaReqDTO(),
                                         dcReqDto.getDepartmentId(),
                                         dcReqDto.getCriteriaId()))
-                        .build());
-    }
-
-    @GetMapping("/{projectId}")
-    public ResponseEntity<ResponseData<?>> getListCriteriaByProjectId(@PathVariable Long projectId) {
-        return ResponseEntity.ok(
-                ResponseData.builder()
-                        .code(SuccessCode.GET_SUCCESSFUL.getCode())
-                        .message(SuccessCode.GET_SUCCESSFUL.getMessage())
-                        .data(criteriaService.getCriteriaByProjectId(projectId))
                         .build());
     }
 }

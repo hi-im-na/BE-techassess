@@ -30,7 +30,12 @@ public class DepartmentRestController {
 
     @GetMapping
     public ResponseEntity<ResponseData<?>> getListDepartment() {
-        return ResponseEntity.ok(ResponseData.builder().code(SuccessCode.GET_SUCCESSFUL.getCode()).message(SuccessCode.GET_SUCCESSFUL.getMessage()).data(departmentService.getAllDepartments()).build());
+        return ResponseEntity.ok(
+                ResponseData.builder()
+                        .code(SuccessCode.GET_SUCCESSFUL.getCode())
+                        .message(SuccessCode.GET_SUCCESSFUL.getMessage())
+                        .data(departmentService.getAllDepartments())
+                        .build());
     }
 
     @GetMapping("/{id}")

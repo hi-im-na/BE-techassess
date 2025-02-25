@@ -12,15 +12,13 @@ public interface ICriteriaService {
 
     Page<CriteriaResDTO> getAllCriteria(int page, int size, String sortBy, boolean asc);
 
-    CriteriaResDTO getCriteriaById(Long id, Long departmentId);
+    CriteriaResDTO getCriteriaById(Long id);
 
     CriteriaResDTO addCriterion(CriteriaReqDTO criteriaReqDTO);
 
     CriteriaResDTO updateCriterion(Long id, CriteriaReqDTO criteriaReqDTO);
 
     void deleteCriterion(Long id);
-
-    void deleteCriterionByCriteriaIdAndDepartmentId(Long criteriaId, Long departmentId);
 
     void validateUniqueTitle(CriteriaReqDTO criteriaReqDTO);
 
@@ -30,5 +28,4 @@ public interface ICriteriaService {
 
     CriteriaResDTO updateCriterionInDepartment(CriteriaReqDTO criteriaReqDTO, Long departmentId, Long criteriaId);
 
-    List<CriteriaResDTO> getCriteriaByProjectId(Long projectId);
 }
