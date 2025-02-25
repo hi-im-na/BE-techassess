@@ -52,6 +52,8 @@ public class DepartmentService implements IDepartmentService {
         return departmentRepository.findAll(pageable).map(departmentMapper::toDepartmentResDTO);
     }
 
+    @Override
+    @Transactional
     public void deleteDepartment(Long id) {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.DEPARTMENT_NOT_FOUND));

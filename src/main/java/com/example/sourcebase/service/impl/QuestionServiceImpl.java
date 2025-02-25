@@ -134,6 +134,7 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 
 
+    @Override
     @Transactional
     public QuestionResDTO addQuestionAndAnswers(AddQuestionReqDto addQuestionReqDto) {
         Question question = questionMapper.toQuestion(addQuestionReqDto);

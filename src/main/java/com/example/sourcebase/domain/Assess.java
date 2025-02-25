@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -37,6 +38,15 @@ public class Assess {
 
     int totalPoint;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    Project project;
+
     @OneToMany(mappedBy = "assess", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private List<AssessDetail> assessDetails;
+    private List<AssessDetail> assessDetails = new ArrayList<>();
+
+    public void addAssessDetail(AssessDetail assessDetail) {
+        assessDetails.add(assessDetail);
+        assessDetail.setAssess(this);
+    }
 }

@@ -1,7 +1,6 @@
 package com.example.sourcebase.service.impl;
 
 import com.example.sourcebase.domain.Project;
-
 import com.example.sourcebase.domain.User;
 import com.example.sourcebase.domain.UserProject;
 import com.example.sourcebase.domain.dto.reqdto.ProjectReqDTO;
@@ -15,10 +14,10 @@ import com.example.sourcebase.repository.IUserProjectRepository;
 import com.example.sourcebase.repository.IUserRepository;
 import com.example.sourcebase.service.IProjectService;
 import com.example.sourcebase.util.ErrorCode;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -38,6 +37,7 @@ public class ProjectService implements IProjectService {
     UserMapper userMapper;
 
     @Override
+    @Transactional
     public ProjectResDTO addProject(ProjectReqDTO projectRequest) {
         if (projectRepository.existsByName(projectRequest.getName())) {
             throw new AppException(ErrorCode.PPOJECT_IS_EXIST);
@@ -84,6 +84,7 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
+    @Transactional
     public boolean deleteProject(Long id) {
         if (projectRepository.existsById(id)) {
             projectRepository.deleteById(id);
@@ -94,6 +95,7 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
+    @Transactional
     public ProjectResDTO updateProject(Long id, ProjectReqDTO projectReqDTO) {
 
         validateProject(projectReqDTO);
@@ -107,6 +109,7 @@ public class ProjectService implements IProjectService {
         }).orElse(null);
     }
 
+    @Override
     @Transactional
     public ProjectResDTO addEmployeesToProject(Long projectId, ProjectReqDTO requestDTO) {
         Project project = projectRepository.findById(projectId)
