@@ -15,6 +15,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.Set;
 
+import java.util.Set;
+
 @Mapper(componentModel = "spring")
 public interface CriteriaMapper {
     Criteria toEntity(CriteriaReqDTO reqDTO);
