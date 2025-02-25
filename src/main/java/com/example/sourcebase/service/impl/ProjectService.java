@@ -34,8 +34,8 @@ public class ProjectService implements IProjectService {
     IUserProjectRepository userProjectRepository;
     IUserRepository userRepository;
 
-    ProjectMapper projectMapper = ProjectMapper.INSTANCE;
-    UserMapper userMapper = UserMapper.INSTANCE;
+    ProjectMapper projectMapper;
+    UserMapper userMapper;
 
     @Override
     public ProjectResDTO addProject(ProjectReqDTO projectRequest) {
@@ -43,11 +43,11 @@ public class ProjectService implements IProjectService {
             throw new AppException(ErrorCode.PPOJECT_IS_EXIST);
         }
         validateProject(projectRequest);
-        Project project = ProjectMapper.INSTANCE.toEntity(projectRequest);
+        Project project = projectMapper.toEntity(projectRequest);
 
         Project savedProject = projectRepository.save(project);
 
-        return ProjectMapper.INSTANCE.toResponseDTO(savedProject);
+        return projectMapper.toResponseDTO(savedProject);
     }
 
     @Override
@@ -65,8 +65,6 @@ public class ProjectService implements IProjectService {
 
         return projectResDTOS;
     }
-
-
 
 
     @Override
@@ -105,7 +103,7 @@ public class ProjectService implements IProjectService {
             existingProject.setStartDay(projectReqDTO.getStartDay());
             existingProject.setEndDay(projectReqDTO.getEndDay());
             Project updatedProject = projectRepository.save(existingProject);
-            return ProjectMapper.INSTANCE.toResponseDTO(updatedProject);
+            return projectMapper.toResponseDTO(updatedProject);
         }).orElse(null);
     }
 

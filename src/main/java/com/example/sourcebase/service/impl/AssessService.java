@@ -29,9 +29,9 @@ import java.util.stream.Collectors;
 @Setter
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 public class AssessService implements IAssessService {
-    AssessMapper assessMapper = AssessMapper.INSTANCE;
-    AssessDetailMapper assessDetailMapper = AssessDetailMapper.INSTANCE;
-    CriteriaMapper criteriaResMapper = CriteriaMapper.INSTANCE;
+    AssessMapper assessMapper;
+    AssessDetailMapper assessDetailMapper;
+    CriteriaMapper criteriaResMapper;
     IAssessRepository assessRepository;
     IUserRepository userRepository;
     IAssessDetailRepository assessDetailRepository;

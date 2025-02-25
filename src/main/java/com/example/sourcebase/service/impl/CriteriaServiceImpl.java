@@ -37,8 +37,8 @@ public class CriteriaServiceImpl implements ICriteriaService {
     ICriteriaRepository criteriaRepository;
     IQuestionRepository questionRepository;
     IDepartmentRepository departmentRepository;
-    CriteriaMapper criteriaMapper = CriteriaMapper.INSTANCE;
-    QuestionMapper questionMapper = QuestionMapper.INSTANCE;
+    CriteriaMapper criteriaMapper;
+    QuestionMapper questionMapper;
     IProjectRepository projectRepository;
 
 

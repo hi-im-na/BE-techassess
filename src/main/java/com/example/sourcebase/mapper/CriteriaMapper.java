@@ -12,14 +12,11 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import org.mapstruct.factory.Mappers;
 
 import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface CriteriaMapper {
-    CriteriaMapper INSTANCE = Mappers.getMapper(CriteriaMapper.class);
-
     Criteria toEntity(CriteriaReqDTO reqDTO);
 
     CriteriaResDTO toCriteriaResDTO(Criteria criteria);
