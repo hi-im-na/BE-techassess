@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.NonNullApi;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,23 +23,13 @@ public interface ICriteriaRepository extends JpaRepository<Criteria, Long> {
     @Query("SELECT c FROM Criteria c WHERE c.isDeleted = false")
     Page<Criteria> findAll(Pageable pageable);
 
-    @Query("SELECT DISTINCT c FROM Criteria c " +
-            "JOIN c.departmentCriterias dc " +
-            "WHERE c.isDeleted = false " +
-            "AND c.id = :id " +
-            "AND dc.department.id = :departmentId")
-    Optional<Criteria> findById(@Param("id") Long id, @Param("departmentId") Long departmentId);
+    @Query("SELECT c FROM Criteria c WHERE c.id = :id AND c.isDeleted = false")
+    Optional<Criteria> findById(@Param("id") Long id);
 
     boolean existsByTitle(String title);
 
     @Query("SELECT COUNT(c) > 0 FROM Criteria c WHERE lower(c.title) = lower(:title) AND c.isDeleted = false")
     boolean existsByTitleIgnoreCase(String title);
-
-    @Query("SELECT c FROM Criteria c " +
-            "JOIN c.departmentCriterias dc " +
-            "WHERE c.isDeleted = false " +
-            "AND dc.department.id = :departmentId")
-    List<Criteria> findAllCriteriaByDepartmentId(@Param("departmentId") Long departmentId);
 
     @Query("select sum(q.point) from Criteria c " +
             "join c.questions q " +

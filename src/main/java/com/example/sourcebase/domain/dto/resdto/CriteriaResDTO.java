@@ -20,5 +20,6 @@ public class CriteriaResDTO {
     String title;
     int point;
     ETypeCriteria visibleFor;
+    DepartmentResDTO department;
     List<QuestionResDTO> questions;
 }

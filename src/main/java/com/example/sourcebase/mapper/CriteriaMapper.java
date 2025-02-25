@@ -14,6 +14,8 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.factory.Mappers;
 
+import java.util.Set;
+
 @Mapper(componentModel = "spring")
 public interface CriteriaMapper {
     CriteriaMapper INSTANCE = Mappers.getMapper(CriteriaMapper.class);
@@ -38,4 +40,8 @@ public interface CriteriaMapper {
     default String fromETypeCriteria(ETypeCriteria type) {
         return type.name();
     }
+
+    Set<Criteria> reqToEntitySet(Set<CriteriaReqDTO> criteriaReqDTOS);
+
+    Set<Criteria> resToEntitySet(Set<CriteriaResDTO> criteriaResDTOS);
 }

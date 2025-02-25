@@ -23,16 +23,6 @@ public interface IDepartmentRepository extends JpaRepository<Department, Long> {
     @Query("SELECT d FROM Department d WHERE d.deleted = false")
     Page<Department> findAll(Pageable pageable);
 
-    @Query("SELECT DISTINCT d FROM Department d " +
-            "JOIN FETCH d.departmentCriterias dc " +
-            "JOIN FETCH dc.criteria c " +
-            "LEFT JOIN FETCH c.questions q " +
-            "LEFT JOIN FETCH q.answers a " +
-            "WHERE (c.isDeleted = false OR c.isDeleted IS NULL) " +
-            "AND (q.isDeleted = false OR q.isDeleted IS NULL) " +
-            "AND (a.isDeleted = false OR a.isDeleted IS NULL)")
-    List<Department> findAllDepartmentsWithCriteriaAndQuestions();
-
     @Override
     @Query("SELECT d FROM Department d WHERE d.id = :id AND d.deleted = false")
     Optional<Department> findById(@Param("id") Long id);
