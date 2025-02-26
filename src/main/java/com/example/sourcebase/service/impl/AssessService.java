@@ -90,8 +90,8 @@ public class AssessService implements IAssessService {
     }
 
     @Override
-    public AssessResDTO getAssess(Long userId) {
-        return assessMapper.toAssessResDto(assessRepository.findByToUserIdAndAssessmentType(userId, ETypeAssess.SELF));
+    public AssessResDTO getAssess(Long userId,Long projectId) {
+        return assessMapper.toAssessResDto(assessRepository.findByToUserIdAndAssessmentTypeAndProjectId(userId, ETypeAssess.SELF,projectId));
     }
 
     @Override
