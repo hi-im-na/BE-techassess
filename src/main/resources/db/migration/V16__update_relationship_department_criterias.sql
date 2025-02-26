@@ -30,6 +30,3 @@ UPDATE criterias SET department_id = 2 WHERE id = 15;
 
 ALTER TABLE criterias
 ADD CONSTRAINT FK_DEPARTMENT_ID FOREIGN KEY(department_id) REFERENCES department(id);
-
-
-

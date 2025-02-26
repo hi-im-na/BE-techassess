@@ -41,7 +41,7 @@ public class UserService implements IUserService, UserDetailsService {
     IRoleRepository roleRepository;
     IUserRoleRepository userRoleRepository;
     JwtTokenProvider jwtTokenProvider;
-    UserMapper userMapper = UserMapper.INSTANCE;
+    UserMapper userMapper;
     IRankRepository rankRepository;
     IPositionRepository positionRepository;
     PasswordEncoder passwordEncoder;

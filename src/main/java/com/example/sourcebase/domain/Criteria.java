@@ -33,7 +33,8 @@ public class Criteria {
 
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
-
-    @OneToMany(mappedBy = "criteria", fetch = FetchType.LAZY)
-    Set<DepartmentCriterias> departmentCriterias;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id", nullable = false)
+    private Department department;
 }

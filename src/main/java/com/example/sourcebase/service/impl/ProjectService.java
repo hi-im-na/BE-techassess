@@ -1,7 +1,6 @@
 package com.example.sourcebase.service.impl;
 
 import com.example.sourcebase.domain.Project;
-
 import com.example.sourcebase.domain.User;
 import com.example.sourcebase.domain.UserProject;
 import com.example.sourcebase.domain.dto.reqdto.ProjectReqDTO;
@@ -15,10 +14,10 @@ import com.example.sourcebase.repository.IUserProjectRepository;
 import com.example.sourcebase.repository.IUserRepository;
 import com.example.sourcebase.service.IProjectService;
 import com.example.sourcebase.util.ErrorCode;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,20 +33,21 @@ public class ProjectService implements IProjectService {
     IUserProjectRepository userProjectRepository;
     IUserRepository userRepository;
 
-    ProjectMapper projectMapper = ProjectMapper.INSTANCE;
-    UserMapper userMapper = UserMapper.INSTANCE;
+    ProjectMapper projectMapper;
+    UserMapper userMapper;
 
     @Override
+    @Transactional
     public ProjectResDTO addProject(ProjectReqDTO projectRequest) {
         if (projectRepository.existsByName(projectRequest.getName())) {
             throw new AppException(ErrorCode.PPOJECT_IS_EXIST);
         }
         validateProject(projectRequest);
-        Project project = ProjectMapper.INSTANCE.toEntity(projectRequest);
+        Project project = projectMapper.toEntity(projectRequest);
 
         Project savedProject = projectRepository.save(project);
 
-        return ProjectMapper.INSTANCE.toResponseDTO(savedProject);
+        return projectMapper.toResponseDTO(savedProject);
     }
 
     @Override
@@ -67,8 +67,6 @@ public class ProjectService implements IProjectService {
     }
 
 
-
-
     @Override
     public ProjectResDTO getProjectById(Long id) {
         Project project = projectRepository.findById(id).orElse(null);
@@ -86,6 +84,7 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
+    @Transactional
     public boolean deleteProject(Long id) {
         if (projectRepository.existsById(id)) {
             projectRepository.deleteById(id);
@@ -96,6 +95,7 @@ public class ProjectService implements IProjectService {
     }
 
     @Override
+    @Transactional
     public ProjectResDTO updateProject(Long id, ProjectReqDTO projectReqDTO) {
 
         validateProject(projectReqDTO);
@@ -105,10 +105,11 @@ public class ProjectService implements IProjectService {
             existingProject.setStartDay(projectReqDTO.getStartDay());
             existingProject.setEndDay(projectReqDTO.getEndDay());
             Project updatedProject = projectRepository.save(existingProject);
-            return ProjectMapper.INSTANCE.toResponseDTO(updatedProject);
+            return projectMapper.toResponseDTO(updatedProject);
         }).orElse(null);
     }
 
+    @Override
     @Transactional
     public ProjectResDTO addEmployeesToProject(Long projectId, ProjectReqDTO requestDTO) {
         Project project = projectRepository.findById(projectId)

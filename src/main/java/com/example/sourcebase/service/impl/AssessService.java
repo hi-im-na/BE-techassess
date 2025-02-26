@@ -1,23 +1,24 @@
 package com.example.sourcebase.service.impl;
 
 import com.example.sourcebase.domain.Assess;
-import com.example.sourcebase.domain.AssessDetail;
 import com.example.sourcebase.domain.User;
 import com.example.sourcebase.domain.UserRole;
-import com.example.sourcebase.mapper.AssessDetailMapper;
-import com.example.sourcebase.mapper.CriteriaMapper;
-import com.example.sourcebase.mapper.QuestionMapper;
-import com.example.sourcebase.repository.*;
-import com.example.sourcebase.mapper.AssessMapper;
 import com.example.sourcebase.domain.dto.reqdto.AssessReqDTO;
 import com.example.sourcebase.domain.dto.resdto.AssessResDTO;
 import com.example.sourcebase.domain.enumeration.ETypeAssess;
+import com.example.sourcebase.exception.AppException;
+import com.example.sourcebase.mapper.AssessDetailMapper;
+import com.example.sourcebase.mapper.AssessMapper;
+import com.example.sourcebase.mapper.CriteriaMapper;
+import com.example.sourcebase.repository.*;
 import com.example.sourcebase.service.IAssessService;
+import com.example.sourcebase.util.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -29,9 +30,9 @@ import java.util.stream.Collectors;
 @Setter
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 public class AssessService implements IAssessService {
-    AssessMapper assessMapper = AssessMapper.INSTANCE;
-    AssessDetailMapper assessDetailMapper = AssessDetailMapper.INSTANCE;
-    CriteriaMapper criteriaResMapper = CriteriaMapper.INSTANCE;
+    AssessMapper assessMapper;
+    AssessDetailMapper assessDetailMapper;
+    CriteriaMapper criteriaResMapper;
     IAssessRepository assessRepository;
     IUserRepository userRepository;
     IAssessDetailRepository assessDetailRepository;
@@ -39,62 +40,34 @@ public class AssessService implements IAssessService {
     IQuestionRepository questionRepository;
 
     @Override
+    @Transactional
     public AssessResDTO updateAssess(AssessReqDTO assessReqDto) {
-        ETypeAssess type = null;
-        User user = userRepository.findById(Long.valueOf(assessReqDto.getUserId())).get();
-        List<UserRole> userRoles = user.getUserRoles();
-        if (assessReqDto.getToUserId().equals(assessReqDto.getUserId())) {
-            type = ETypeAssess.SELF;
-        } else {
-            boolean isManager = userRoles.stream().anyMatch(item -> item.getRole().getName().equalsIgnoreCase("Manager"));
-            if (isManager) {
-                type = ETypeAssess.MANAGER;
-            }else {
-                type = ETypeAssess.TEAM;
-            }
-        }
-        User userReview = userRepository.findById(Long.valueOf(assessReqDto.getUserId())).get();
-        User toUser = userRepository.findById(Long.valueOf(assessReqDto.getToUserId())).get();
-        Assess assess = assessMapper.toAssess(assessReqDto);
-        assess.setUser(userReview);
-        assess.setToUser(toUser);
-        assess.setAssessmentType(type);
-        assess.setTotalPoint(Integer.parseInt(assessReqDto.getTotalPoint()));
-        assess.setAssessmentDate(LocalDate.now());
+        User user = userRepository.findById(Long.valueOf(assessReqDto.getUserId()))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        ETypeAssess type = determineAssessmentType(assessReqDto, user.getUserRoles());
 
-        assessReqDto.getAssessDetails().forEach(item -> {
-            AssessDetail assessDetail = assessDetailMapper.toAssessDetail(item);
-            assessDetail.setAssess(assess);
-            if (item.getCriteriaId().equals("6") || item.getCriteriaId().equals("7") || item.getCriteriaId().equals("8")) {
-                assessDetail.setComment(true);
-            }
-            if (item.getQuestionId() != null) {
-                assessDetail.setQuestion(questionRepository.findById(Long.valueOf(item.getQuestionId())).get());
-            } else {
-                assessDetail.setQuestion(null);
-            }
-            assessDetail.setCriteria(criteriaRepository.findById(Long.valueOf(item.getCriteriaId())).get());
+        Assess assess = assessMapper.toAssess(assessReqDto);
+        assess.setAssessmentType(type);
+        assess.setAssessmentDate(LocalDate.now());
+        assess.setProject(null);
+
+        assess.getAssessDetails().forEach(ad -> {
+            ad.setQuestion(questionRepository.findById(ad.getQuestion().getId()).orElse(null));
+            ad.setCriteria(criteriaRepository.findById(ad.getCriteria().getId()).orElse(null));
         });
-        assess.setAssessDetails(assessReqDto.getAssessDetails().stream()
-                .map(item -> {
-                    AssessDetail assessDetail = assessDetailMapper.toAssessDetail(item);
-                    assessDetail.setAssess(assess);
-                    if (item.getCriteriaId().equals("6") || item.getCriteriaId().equals("7") || item.getCriteriaId().equals("8")) {
-                        assessDetail.setComment(true);
-                    }
-                    if (item.getQuestionId() != null) {
-                        assessDetail.setQuestion(questionRepository.findById(Long.valueOf(item.getQuestionId())).get());
-                    } else {
-                        assessDetail.setQuestion(null);
-                    }
-                    assessDetail.setCriteria(criteriaRepository.findById(Long.valueOf(item.getCriteriaId())).get());
-                    return assessDetail;
-                })
-                .collect(Collectors.toList()));
 
         assessRepository.save(assess);
 
         return assessMapper.toAssessResDto(assess);
+    }
+
+    private ETypeAssess determineAssessmentType(AssessReqDTO assessReqDto, List<UserRole> userRoles) {
+        if (assessReqDto.getToUserId().equals(assessReqDto.getUserId())) {
+            return ETypeAssess.SELF;
+        }
+        return userRoles.stream().anyMatch(item -> item.getRole().getName().equalsIgnoreCase("Manager"))
+                ? ETypeAssess.MANAGER
+                : ETypeAssess.TEAM;
     }
 
     @Override
@@ -118,9 +91,7 @@ public class AssessService implements IAssessService {
 
     @Override
     public AssessResDTO getAssess(Long userId) {
-        AssessResDTO myAssess = assessMapper.toAssessResDto(assessRepository.findByToUserIdAndAssessmentType(userId, ETypeAssess.SELF));
-        myAssess.getAssessDetails().forEach(item -> item.setAssessId(myAssess.getId()));
-        return myAssess;
+        return assessMapper.toAssessResDto(assessRepository.findByToUserIdAndAssessmentType(userId, ETypeAssess.SELF));
     }
 
     @Override

@@ -6,12 +6,9 @@ import com.example.sourcebase.domain.dto.resdto.user.UserDetailResDTO;
 import com.example.sourcebase.domain.dto.resdto.user.UserResDTO;
 import com.example.sourcebase.domain.dto.resdto.user.UserRoleResDTO;
 import org.mapstruct.*;
-import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
-
     //    @Mappings({
 //            @Mapping(target = "dob", source = "dob", dateFormat = "dd-MM-yyyy")
 ////            ,@Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
