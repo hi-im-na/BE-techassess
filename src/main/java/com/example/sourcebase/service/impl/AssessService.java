@@ -1,6 +1,7 @@
 package com.example.sourcebase.service.impl;
 
 import com.example.sourcebase.domain.Assess;
+import com.example.sourcebase.domain.Project;
 import com.example.sourcebase.domain.User;
 import com.example.sourcebase.domain.UserRole;
 import com.example.sourcebase.domain.dto.reqdto.AssessReqDTO;
@@ -38,6 +39,7 @@ public class AssessService implements IAssessService {
     IAssessDetailRepository assessDetailRepository;
     ICriteriaRepository criteriaRepository;
     IQuestionRepository questionRepository;
+    IProjectRepository projectRepository;
 
     @Override
     @Transactional
@@ -49,7 +51,11 @@ public class AssessService implements IAssessService {
         Assess assess = assessMapper.toAssess(assessReqDto);
         assess.setAssessmentType(type);
         assess.setAssessmentDate(LocalDate.now());
-        assess.setProject(null);
+
+        Long projectId = Long.valueOf(assessReqDto.getProjectId());
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROJECT_NOT_FOUND));
+        assess.setProject(project);
 
         assess.getAssessDetails().forEach(ad -> {
             ad.setQuestion(questionRepository.findById(ad.getQuestion().getId()).orElse(null));
@@ -82,7 +88,6 @@ public class AssessService implements IAssessService {
                 })
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public boolean isSubmitForm(Long userId, Long toUserId) {

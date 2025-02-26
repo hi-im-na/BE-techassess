@@ -31,4 +31,5 @@ public interface IAssessRepository extends JpaRepository<Assess, Long> {
      * @return list of assess
      */
     List<Assess> findByToUser_Id(Long userId);
+
 }
