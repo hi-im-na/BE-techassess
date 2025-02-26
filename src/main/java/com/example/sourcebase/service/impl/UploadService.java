@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -17,12 +18,14 @@ import java.io.IOException;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UploadService implements IUploadService {
- Cloudinary cloudinary;
+    Cloudinary cloudinary;
 
- IFileInfoRepository fileRepository;
+    IFileInfoRepository fileRepository;
 
- UploadUtils uploadUtils;
+    UploadUtils uploadUtils;
 
+    @Override
+    @Transactional
     public FileInfo saveAvatar(MultipartFile avatar) throws IOException {
         if (avatar == null) {
             return null;

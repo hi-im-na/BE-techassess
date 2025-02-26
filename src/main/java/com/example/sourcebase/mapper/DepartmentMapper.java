@@ -8,12 +8,9 @@ import com.example.sourcebase.domain.dto.resdto.AnswerResDTO;
 import com.example.sourcebase.domain.dto.resdto.CriteriaResDTO;
 import com.example.sourcebase.domain.dto.resdto.DepartmentResDTO;
 import org.mapstruct.*;
-import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring", collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
 public interface DepartmentMapper {
-    DepartmentMapper INSTANCE = Mappers.getMapper(DepartmentMapper.class);
-
     Department toEntity(DepartmentReqDTO reqDTO);
 
     Department toEntity(DepartmentResDTO resDTO);

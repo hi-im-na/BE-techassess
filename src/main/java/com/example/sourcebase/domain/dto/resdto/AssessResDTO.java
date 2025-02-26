@@ -20,6 +20,7 @@ public class AssessResDTO {
     String assessmentDate;
     String assessmentType;
     String totalPoint;
+    ProjectResDTO project;
     List<AssessDetailResDto> assessDetails;
 
 }

@@ -6,15 +6,15 @@ import com.example.sourcebase.domain.dto.resdto.AssessResDTO;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
-@Mapper(componentModel = "spring", collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
+@Mapper(componentModel = "spring", collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED, uses = {AssessDetailMapper.class})
 public interface AssessMapper {
-    AssessMapper INSTANCE = Mappers.getMapper(AssessMapper.class);
-
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "toUser.id", target = "toUserId")
     AssessResDTO toAssessResDto(Assess assess);
 
+    @Mapping(source = "userId", target = "user.id")
+    @Mapping(source = "toUserId", target = "toUser.id")
+    @Mapping(source = "projectId", target = "project.id")
     Assess toAssess(AssessReqDTO assessReqDto);
 }

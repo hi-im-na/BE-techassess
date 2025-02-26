@@ -22,5 +22,6 @@ public class AssessReqDTO {
     @NotBlank(message = "Please select a user to assess")
     String toUserId;
     String totalPoint;
+    String projectId;
     List<AssessDetailReqDTO> assessDetails;
 }

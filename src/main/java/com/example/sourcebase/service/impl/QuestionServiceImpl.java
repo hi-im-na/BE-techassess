@@ -36,8 +36,8 @@ public class QuestionServiceImpl implements IQuestionService {
 
     IQuestionRepository questionRepository;
     ICriteriaRepository criteriaRepository;
-    QuestionMapper questionMapper = QuestionMapper.INSTANCE;
-    AnswerMapper answerMapper = AnswerMapper.INSTANCE;
+    QuestionMapper questionMapper;
+    AnswerMapper answerMapper;
     IAnswerRepository answerRepository;
     IDepartmentRepository departmentRepository;
 
@@ -134,6 +134,7 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 
 
+    @Override
     @Transactional
     public QuestionResDTO addQuestionAndAnswers(AddQuestionReqDto addQuestionReqDto) {
         Question question = questionMapper.toQuestion(addQuestionReqDto);
