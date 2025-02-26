@@ -22,5 +22,4 @@ public class AssessResDTO {
     String totalPoint;
     ProjectResDTO project;
     List<AssessDetailResDto> assessDetails;
-
 }
