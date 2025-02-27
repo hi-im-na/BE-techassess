@@ -101,9 +101,9 @@ public class UserRestController {
     }
 
     @GetMapping("/{userId}/same-project")
-    public ResponseEntity<ResponseData<?>> getAllUserHadSameProject(@PathVariable Long userId,@RequestParam Long projectId) {
-        List<UserResDTO> usersHadSameProject = userService.getAllUserHadSameProject(userId,projectId);
+    public ResponseEntity<ResponseData<?>> getAllUserHadSameProject(@PathVariable Long userId,@RequestParam(required = false) Long projectId) {
 
+        List<UserResDTO> usersHadSameProject = userService.getAllUserHadSameProject(userId, projectId);
         if (usersHadSameProject.isEmpty()) {
             return ResponseEntity.status(ErrorCode.USER_NOT_FOUND.getHttpStatus()).body(
                     ResponseData.builder()
