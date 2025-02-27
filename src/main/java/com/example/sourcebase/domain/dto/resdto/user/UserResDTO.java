@@ -29,6 +29,7 @@ public class UserResDTO extends BaseEntityDto {
     RankResDto rank;
     Long departmentId;
     FileInfoResDTO fileInfo;
+    Long projectId;
     List<UserRoleResDTO> userRoles;
     List<UserProjectResDTO> userProjects;
 }

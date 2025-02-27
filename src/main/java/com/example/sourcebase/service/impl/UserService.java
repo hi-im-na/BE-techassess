@@ -47,6 +47,8 @@ public class UserService implements IUserService, UserDetailsService {
     PasswordEncoder passwordEncoder;
     UploadService uploadService;
     IUserProjectRepository userProjectRepository;
+    IProjectRepository projectRepository;
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -327,11 +329,14 @@ public class UserService implements IUserService, UserDetailsService {
     }
 
     @Override
-    public List<UserResDTO> getAllUserHadSameProject(Long userId) {
+    public List<UserResDTO> getAllUserHadSameProject(Long userId,Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElse(null);
         List<User> userList = userRepository.getAllUserHadSameProject(userId);
         List<UserResDTO> userResDTOS = new ArrayList<>();
         for (User user : userList) {
             UserResDTO userResDTO = userMapper.toUserResDTO(user);
+            userResDTO.setProjectId(projectId);
             if (!user.getUserProjects().isEmpty()) {
                 List<UserProjectResDTO> userProjectResDTOS = new ArrayList<>();
                 for (UserProject userProject : user.getUserProjects()) {
