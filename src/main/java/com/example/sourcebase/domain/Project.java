@@ -38,4 +38,8 @@ public class Project {
 
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     List<Assess> assesses;
+
+    @OneToOne
+    @JoinColumn(name = "lead_id")
+    User user;
 }
