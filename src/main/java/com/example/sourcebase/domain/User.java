@@ -44,6 +44,8 @@ public class User extends BaseEntity {
     @ManyToOne
     Rank rank;
     Long departmentId;
-    @OneToOne(mappedBy = "user")
-    Project project;
+
+    @OneToMany(mappedBy = "user")
+    List<Project> project;
+
 }
