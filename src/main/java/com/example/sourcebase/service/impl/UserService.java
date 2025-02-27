@@ -331,7 +331,7 @@ public class UserService implements IUserService, UserDetailsService {
     @Override
     public List<UserResDTO> getAllUserHadSameProject(Long userId,Long projectId) {
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new AppException(ErrorCode.PROJECT_NOT_FOUND));
+                .orElse(null);
         List<User> userList = userRepository.getAllUserHadSameProject(userId);
         List<UserResDTO> userResDTOS = new ArrayList<>();
         for (User user : userList) {
