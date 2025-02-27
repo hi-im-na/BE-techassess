@@ -104,14 +104,15 @@ public class UserRestController {
     public ResponseEntity<ResponseData<?>> getAllUserHadSameProject(@PathVariable Long userId,@RequestParam(required = false) Long projectId) {
 
         List<UserResDTO> usersHadSameProject = userService.getAllUserHadSameProject(userId, projectId);
-        if (usersHadSameProject.isEmpty()) {
-            return ResponseEntity.status(ErrorCode.USER_NOT_FOUND.getHttpStatus()).body(
-                    ResponseData.builder()
-                            .code(ErrorCode.USER_NOT_FOUND.getCode())
-                            .message(ErrorCode.USER_NOT_FOUND.getMessage())
-                            .build());
+        if(projectId != null){
+            if (usersHadSameProject.isEmpty()) {
+                return ResponseEntity.status(ErrorCode.USER_NOT_FOUND.getHttpStatus()).body(
+                        ResponseData.builder()
+                                .code(ErrorCode.USER_NOT_FOUND.getCode())
+                                .message(ErrorCode.USER_NOT_FOUND.getMessage())
+                                .build());
+            }
         }
-
         return ResponseEntity.ok(
                 ResponseData.builder()
                         .code(SuccessCode.GET_SUCCESSFUL.getCode())

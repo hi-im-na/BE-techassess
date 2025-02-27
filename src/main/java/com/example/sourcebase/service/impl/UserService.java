@@ -336,13 +336,16 @@ public class UserService implements IUserService, UserDetailsService {
             p = projectRepository.findById(projectId).orElse(null);
         }
 
-        List<User> userList = userRepository.getAllUserHadSameProject(userId);
+        List<User> userList = userRepository.getAllUserHadSameProject(userId,projectId);
         List<UserResDTO> userResDTOS = new ArrayList<>();
         for (User user : userList) {
             UserResDTO userResDTO = userMapper.toUserResDTO(user);
             if (p != null) {
                 userResDTO.setProjectId(p.getId());
+            } else {
+                userResDTO.setProjectId(null);
             }
+
             if (!user.getUserProjects().isEmpty()) {
                 List<UserProjectResDTO> userProjectResDTOS = new ArrayList<>();
                 for (UserProject userProject : user.getUserProjects()) {
