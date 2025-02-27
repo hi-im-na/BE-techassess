@@ -57,9 +57,9 @@ public class AssessRestController {
         );
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<ResponseData<?>> getAllUserHadSameProject(@PathVariable Long userId) {
-        if (assessService.getAssess(userId) == null) {
+    @GetMapping
+    public ResponseEntity<ResponseData<?>> getAllUserHadSameProject(@RequestParam Long userId,@RequestParam Long projectId) {
+        if (assessService.getAssess(userId,projectId) == null) {
             return ResponseEntity.status(ErrorCode.ASSESS_IS_NOT_EXIST.getHttpStatus()).body(
                     ResponseData.builder()
                             .code(ErrorCode.ASSESS_IS_NOT_EXIST.getCode())
@@ -71,7 +71,7 @@ public class AssessRestController {
                 ResponseData.builder()
                         .code(SuccessCode.GET_SUCCESSFUL.getCode())
                         .message(SuccessCode.GET_SUCCESSFUL.getMessage())
-                        .data(assessService.getAssess(userId))
+                        .data(assessService.getAssess(userId,projectId))
                         .build()
         );
     }
