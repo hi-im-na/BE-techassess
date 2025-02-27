@@ -3,6 +3,7 @@ package com.example.sourcebase.controller;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -102,7 +103,13 @@ public class UserRestController {
 
     @GetMapping("/{userId}/same-project")
     public ResponseEntity<ResponseData<?>> getAllUserHadSameProject(@PathVariable Long userId,@RequestParam(required = false) Long projectId) {
-
+        if (projectId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseData.builder()
+                            .code(ErrorCode.PPOJECT_IS_EXIST.getCode())
+                            .message("Bắt buoc nhap project")
+                            .build());
+        }
         List<UserResDTO> usersHadSameProject = userService.getAllUserHadSameProject(userId, projectId);
         if(projectId != null){
             if (usersHadSameProject.isEmpty()) {
