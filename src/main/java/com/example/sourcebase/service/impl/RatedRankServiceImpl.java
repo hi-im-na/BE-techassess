@@ -54,7 +54,7 @@ public class RatedRankServiceImpl implements IRatedRankService {
                 case SELF -> throw new AppException(ErrorCode.SELF_ASSESS_IS_NOT_EXIST);
                 case TEAM -> {
                     // todo: trường hợp team chỉ có 2 người sẽ không có đánh giá của team -> không trả về lỗi
-                    if (userService.getAllUserHadSameProject(toUserId).size() == 1) {
+                    if (userService.getAllUserHadSameProject(toUserId, projectId).size() == 1) {
                         return new ArrayList<>();
                     }
                     throw new AppException(ErrorCode.TEAM_ASSESS_IS_NOT_EXIST);
