@@ -8,6 +8,7 @@ import com.example.sourcebase.util.SuccessCode;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.BindingResult;
@@ -15,14 +16,15 @@ import org.springframework.validation.BindingResult;
 @RestController
 @AllArgsConstructor
 @RequestMapping("api/projects")
-@CrossOrigin(origins = {"http://192.168.0.152:5000", "http://192.168.0.152:6123", "http://localhost:5000", "http://localhost:6123"})
+@CrossOrigin(origins = { "http://192.168.0.152:5000", "http://192.168.0.152:6123", "http://localhost:5000",
+        "http://localhost:6123" })
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 public class ProjectRestController {
     IProjectService projectService;
 
-
     @PostMapping("/add")
-    public ResponseEntity<ResponseData<?>> createProject(@Valid @RequestBody ProjectReqDTO projectRequest, BindingResult bindingResult) {
+    public ResponseEntity<ResponseData<?>> createProject(@Valid @RequestBody ProjectReqDTO projectRequest,
+            BindingResult bindingResult) {
         return ResponseEntity.ok(
                 ResponseData.builder()
                         .code(SuccessCode.CREATED.getCode())
@@ -40,14 +42,16 @@ public class ProjectRestController {
                         .data(projectService.getAll())
                         .build());
     }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseData<?>> deleteProject(@PathVariable Long id) {
-        return ResponseEntity.ok(
-                ResponseData.builder()
-                        .code(SuccessCode.DELETE_SUCCESSFUL.getCode())
-                        .message(SuccessCode.DELETE_SUCCESSFUL.getMessage())
-                        .data(projectService.deleteProject(id))
-                        .build());
+    public ResponseEntity<ResponseData<?>> deleteProject(@PathVariable Long id,
+            @RequestParam(required = false) Long userId) {
+        if (userId != null) {
+            projectService.deleteEmployeeFromProject(id, userId);
+        } else {
+            projectService.deleteProject(id);
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/{id}")
@@ -59,18 +63,22 @@ public class ProjectRestController {
                         .data(projectService.getProjectById(id))
                         .build());
     }
+
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseData<?>> updateProject(@PathVariable Long id, @RequestBody ProjectReqDTO projectReqDTO) {
+    public ResponseEntity<ResponseData<?>> updateProject(@PathVariable Long id,
+            @RequestBody ProjectReqDTO projectReqDTO) {
         ProjectResDTO updatedProject = projectService.updateProject(id, projectReqDTO);
-            return ResponseEntity.ok(
-                    ResponseData.builder()
-                            .code(SuccessCode.UPDATE_SUCCESSFUL.getCode())
-                            .message(SuccessCode.UPDATE_SUCCESSFUL.getMessage())
-                            .data(updatedProject)
-                            .build());
-        }
+        return ResponseEntity.ok(
+                ResponseData.builder()
+                        .code(SuccessCode.UPDATE_SUCCESSFUL.getCode())
+                        .message(SuccessCode.UPDATE_SUCCESSFUL.getMessage())
+                        .data(updatedProject)
+                        .build());
+    }
+
     @PutMapping("/updateLeader/{projectId}")
-    public ResponseEntity<ResponseData<?>> updateLeader(@PathVariable Long projectId, @RequestBody ProjectReqDTO projectReqDTO) {
+    public ResponseEntity<ResponseData<?>> updateLeader(@PathVariable Long projectId,
+            @RequestBody ProjectReqDTO projectReqDTO) {
         ProjectResDTO updatedProject = projectService.updateLeader(projectId, projectReqDTO);
         return ResponseEntity.ok(
                 ResponseData.builder()
@@ -79,11 +87,11 @@ public class ProjectRestController {
                         .data(updatedProject)
                         .build());
     }
+
     @PostMapping("/{projectId}/employees")
     public ResponseEntity<ResponseData<?>> addEmployeesToProject(
             @PathVariable Long projectId,
-            @RequestBody ProjectReqDTO requestDTO
-    ) {
+            @RequestBody ProjectReqDTO requestDTO) {
         ProjectResDTO responseDTO = projectService.addEmployeesToProject(projectId, requestDTO);
         return ResponseEntity.ok(
                 ResponseData.builder()

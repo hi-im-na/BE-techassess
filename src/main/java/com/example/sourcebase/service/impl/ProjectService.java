@@ -1,6 +1,13 @@
 package com.example.sourcebase.service.impl;
 
-import com.example.sourcebase.domain.Department;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.sourcebase.domain.Project;
 import com.example.sourcebase.domain.User;
 import com.example.sourcebase.domain.UserProject;
@@ -17,15 +24,9 @@ import com.example.sourcebase.repository.IUserProjectRepository;
 import com.example.sourcebase.repository.IUserRepository;
 import com.example.sourcebase.service.IProjectService;
 import com.example.sourcebase.util.ErrorCode;
+
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -64,14 +65,14 @@ public class ProjectService implements IProjectService {
         for (Project project : projects) {
             // Gọi hàm getProjectById để lấy ProjectResDTO cho từng dự án
             ProjectResDTO projectResDTO = getProjectById(project.getId());
-            if (project.getUser() != null && project.getUser().getId() != null) {
-                projectResDTO.setLeaderId(project.getUser().getId());}
+            if (project.getLeader() != null && project.getDepartment().getId() != null) {
+                projectResDTO.setLeaderId(project.getLeader().getId());
+            }
             projectResDTOS.add(projectResDTO);
         }
 
         return projectResDTOS;
     }
-
 
     @Override
     public ProjectResDTO getProjectById(Long id) {
@@ -91,15 +92,27 @@ public class ProjectService implements IProjectService {
 
     @Override
     @Transactional
-    public boolean deleteProject(Long id) {
-        if (projectRepository.existsById(id)) {
-            projectRepository.deleteById(id);
-            return true;
-        } else {
-            return false;
+    public void deleteProject(Long id) {
+        if (!projectRepository.existsById(id)) {
+            throw new AppException(ErrorCode.PROJECT_NOT_FOUND);
         }
+        projectRepository.deleteById(id);
     }
 
+    @Override
+    @Transactional
+    public void deleteEmployeeFromProject(Long projectId, Long userId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROJECT_NOT_FOUND));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        UserProject userProject = userProjectRepository.findByProject_IdAndUser_Id(projectId, userId);
+        if (userProject == null) {
+            throw new AppException(ErrorCode.USER_PROJECT_NOT_FOUND);
+        }
+        userProjectRepository.delete(userProject);
+    }
     @Override
     @Transactional
     public ProjectResDTO updateProject(Long id, ProjectReqDTO projectReqDTO) {
@@ -114,6 +127,7 @@ public class ProjectService implements IProjectService {
             return projectMapper.toResponseDTO(updatedProject);
         }).orElse(null);
     }
+
     @Override
     @Transactional
     public ProjectResDTO updateLeader(Long id, ProjectReqDTO projectReqDTO) {
@@ -122,9 +136,9 @@ public class ProjectService implements IProjectService {
         if (projectReqDTO.getLeaderId() != null) {
             User leader = userRepository.findById(projectReqDTO.getLeaderId())
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-            project.setUser(leader);
+            project.setLeader(leader);
         } else {
-            project.setUser(null);
+            project.setLeader(null);
         }
         Project updatedProject = projectRepository.save(project);
         DepartmentResDTO departmentResDTO = departmentMapper.toResponseDTO(updatedProject.getDepartment());
@@ -141,7 +155,7 @@ public class ProjectService implements IProjectService {
 
         ProjectResDTO responseDTO = projectMapper.toResponseDTO(updatedProject);
         responseDTO.setUserProjects(userProjectResDTOS);
-        responseDTO.setLeaderId(updatedProject.getUser() != null ? updatedProject.getUser().getId() : null);
+        responseDTO.setLeaderId(updatedProject.getLeader() != null ? updatedProject.getLeader().getId() : null);
 
         return responseDTO;
     }
@@ -154,7 +168,7 @@ public class ProjectService implements IProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new AppException(ErrorCode.PROJECT_NOT_FOUND));
 
-        project.setUser(leader);
+        project.setLeader(leader);
         projectRepository.save(project);
         List<User> usersToAdd = userRepository.findAllById(requestDTO.getEmployeeIds());
 
@@ -192,7 +206,6 @@ public class ProjectService implements IProjectService {
         responseDTO.setLeaderId(leader.getId());
         return responseDTO;
     }
-
 
     private void validateProject(ProjectReqDTO projectReqDTO) {
 

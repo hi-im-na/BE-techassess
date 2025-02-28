@@ -15,7 +15,9 @@ public interface IProjectService {
 
     ProjectResDTO getProjectById(Long id);
 
-    boolean deleteProject(Long id);
+    void deleteProject(Long id);
+
+    void deleteEmployeeFromProject(Long projectId, Long userId);
 
     ProjectResDTO updateProject(Long id, ProjectReqDTO projectReqDTO);
 

@@ -17,15 +17,18 @@ public interface ProjectMapper {
     @Mapping(source = "startDay", target = "startDay")
     @Mapping(source = "endDay", target = "endDay")
     @Mapping(source = "departmentId", target = "department.id")
-    @Mapping(target = "user.id", source = "leaderId")
+    @Mapping(source = "leaderId", target = "leader.id")
     Project toEntity(ProjectReqDTO dto);
 
-
+    @Mapping(source = "startDay", target = "startDay")
+    @Mapping(source = "endDay", target = "endDay")
+    @Mapping(source = "leader.id", target = "leaderId")
     ProjectResDTO toResponseDTO(Project entity);
+
     List<ProjectResDTO> toProjectResDTOs(List<Project> projects);
 
-
     List<UserResDTO> toUserDTOs(List<User> users);
+
     List<UserProjectResDTO> toUserProjectResDTOs(List<UserProject> userProjects);
 
 }
