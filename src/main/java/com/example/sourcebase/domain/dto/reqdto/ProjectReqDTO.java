@@ -19,6 +19,7 @@ public class ProjectReqDTO {
 
      LocalDate startDay;
 
+     Long leaderId;
      LocalDate endDay;
      Long departmentId;
      List<Long> employeeIds;

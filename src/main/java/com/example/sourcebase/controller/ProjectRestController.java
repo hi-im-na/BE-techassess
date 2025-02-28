@@ -72,7 +72,8 @@ public class ProjectRestController {
     @PostMapping("/{projectId}/employees")
     public ResponseEntity<ResponseData<?>> addEmployeesToProject(
             @PathVariable Long projectId,
-            @RequestBody ProjectReqDTO requestDTO) {
+            @RequestBody ProjectReqDTO requestDTO
+    ) {
         ProjectResDTO responseDTO = projectService.addEmployeesToProject(projectId, requestDTO);
         return ResponseEntity.ok(
                 ResponseData.builder()

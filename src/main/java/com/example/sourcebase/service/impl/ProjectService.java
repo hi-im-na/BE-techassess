@@ -60,6 +60,8 @@ public class ProjectService implements IProjectService {
         for (Project project : projects) {
             // Gọi hàm getProjectById để lấy ProjectResDTO cho từng dự án
             ProjectResDTO projectResDTO = getProjectById(project.getId());
+            if (project.getUser() != null && project.getUser().getId() != null) {
+                projectResDTO.setLeaderId(project.getUser().getId());}
             projectResDTOS.add(projectResDTO);
         }
 
@@ -112,9 +114,13 @@ public class ProjectService implements IProjectService {
     @Override
     @Transactional
     public ProjectResDTO addEmployeesToProject(Long projectId, ProjectReqDTO requestDTO) {
+        User leader = userRepository.findById((requestDTO.getLeaderId()))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new AppException(ErrorCode.PROJECT_NOT_FOUND));
 
+        project.setUser(leader);
+        projectRepository.save(project);
         List<User> usersToAdd = userRepository.findAllById(requestDTO.getEmployeeIds());
 
         if (usersToAdd.size() != requestDTO.getEmployeeIds().size()) {
@@ -148,7 +154,7 @@ public class ProjectService implements IProjectService {
         responseDTO.setStartDay(project.getStartDay());
         responseDTO.setEndDay(project.getEndDay());
         responseDTO.setUserProjects(userProjectResDTOS);
-
+        responseDTO.setLeaderId(leader.getId());
         return responseDTO;
     }
 
