@@ -7,11 +7,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/rated-rank")
@@ -23,12 +19,17 @@ public class RatedRankController {
     IRatedRankService ratedRankService;
 
     @GetMapping("/overall-rated/{userId}")
-    public ResponseEntity<ResponseData<?>> getOverallRatedOfAUser(@PathVariable Long userId) {
+    public ResponseEntity<ResponseData<?>> getOverallRatedOfAUser(@PathVariable Long userId,
+                                                                  @RequestParam(required = false) Long projectId) {
         return ResponseEntity.ok(
                 ResponseData.builder()
                         .code(SuccessCode.GET_SUCCESSFUL.getCode())
                         .message(SuccessCode.GET_SUCCESSFUL.getMessage())
-                        .data(ratedRankService.getOverallRatedOfAUser(userId))
+                        .data(
+                                projectId == null
+                                        ? ratedRankService.getOverallRatedOfAUserInAllProject(userId)
+                                        : ratedRankService.getOverallRatedOfAUserByProject(userId, projectId)
+                        )
                         .build());
     }
 

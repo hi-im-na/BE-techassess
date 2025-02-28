@@ -6,7 +6,6 @@ import com.example.sourcebase.service.IRatedRankService;
 import com.example.sourcebase.util.ErrorCode;
 import com.example.sourcebase.util.ResponseData;
 import com.example.sourcebase.util.SuccessCode;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -83,7 +82,7 @@ public class AssessRestController {
                 ResponseData.builder()
                         .code(SuccessCode.GET_SUCCESSFUL.getCode())
                         .message(SuccessCode.GET_SUCCESSFUL.getMessage())
-                        .data(ratedRankService.getAverageValueOfCriteriaByManager(Long.parseLong(userId)))
+//                        .data(ratedRankService.getAverageValueOfCriteriaByManager(Long.parseLong(userId)))
                         .build()
         );
     }
