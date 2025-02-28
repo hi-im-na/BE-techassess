@@ -3,22 +3,21 @@ package com.example.sourcebase.service.impl;
 import com.example.sourcebase.domain.Assess;
 import com.example.sourcebase.domain.AssessDetail;
 import com.example.sourcebase.domain.Criteria;
-import com.example.sourcebase.domain.dto.resdto.AssessDetailResDto;
-import com.example.sourcebase.domain.dto.resdto.AssessResDTO;
 import com.example.sourcebase.domain.dto.resdto.custom.OverallRatedResDto;
 import com.example.sourcebase.domain.enumeration.ERank;
-import com.example.sourcebase.domain.enumeration.ERole;
+import com.example.sourcebase.domain.enumeration.ETypeAssess;
 import com.example.sourcebase.domain.model.AverageValueInCriteria;
 import com.example.sourcebase.domain.model.OverallOfACriterion;
 import com.example.sourcebase.exception.AppException;
-import com.example.sourcebase.mapper.AssessMapper;
 import com.example.sourcebase.repository.IAssessDetailRepository;
 import com.example.sourcebase.repository.IAssessRepository;
 import com.example.sourcebase.repository.ICriteriaRepository;
+import com.example.sourcebase.repository.IUserProjectRepository;
 import com.example.sourcebase.service.IRatedRankService;
+import com.example.sourcebase.service.IUserService;
 import com.example.sourcebase.util.ErrorCode;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
@@ -28,123 +27,119 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RatedRankServiceImpl implements IRatedRankService {
     IAssessRepository assessRepository;
-    AssessMapper assessMapper;
     IAssessDetailRepository assessDetailRepository;
     ICriteriaRepository criteriaRepository;
+    IUserProjectRepository userProjectRepository;
+    IUserService userService;
 
-    @Override
-    public List<AverageValueInCriteria> getAverageValueOfCriteriaByTeam(Long userId) {
-        // 1. Lấy danh sách đánh giá TEAM của userId
-        List<AssessResDTO> assessesResDto = assessRepository.getListAssessTeamOfUserId(userId).stream()
-                .map(assess -> {
-                    AssessResDTO assessResDTO = assessMapper.toAssessResDto(assess);
-                    assessResDTO.setAssessDetails(assessResDTO.getAssessDetails().stream()
-                            .peek(assessDetail -> assessDetail.setAssessId(assessResDTO.getId()))
-                            .collect(Collectors.toList()));
-                    return assessResDTO;
-                })
-                .toList();
 
-        // 2. Tính giá trị trung bình của các tiêu chí (criteriaID giống nhau)
-        Map<Long, Double> result = new HashMap<>();
-        assessesResDto.forEach(assessResDTO -> {
-            Map<Long, List<AssessDetailResDto>> groupedByCriteria = assessResDTO.getAssessDetails().stream()
-                    .collect(Collectors.groupingBy(detail -> detail.getCriteria().getId()));
-
-            groupedByCriteria.forEach((criteriaId, assessDetails) -> {
-                double averageValue = assessDetails.stream()
-                        .mapToDouble(AssessDetailResDto::getValue)
-                        .average()
-                        .orElse(0.0);
-
-                if (Math.round(averageValue) != 0) {
-                    result.put(criteriaId, averageValue);
+    /**
+     * Lấy list giá trị trung bình của các tiêu chí dựa trên toUserId, projectId và assessmentType
+     *
+     * @param toUserId       người được đánh giá
+     * @param projectId      dự án
+     * @param assessmentType loại đánh giá
+     * @return danh sách giá trị trung bình của các tiêu chí
+     */
+    private List<AverageValueInCriteria> getAvgValueOfCriteriaByToUserIdAndProjectIdAndAssessmentType(Long toUserId, Long projectId, ETypeAssess assessmentType) {
+        // 1. Lấy danh sách đánh giá dựa trên toUserId, projectId và assessmentType
+        // lúc này bản ghi đánh giá sẽ có cùng projectId, toUserId và assessmentType
+        List<Assess> assesses = assessRepository.findAllByToUser_IdAndProject_IdAndAssessmentType(toUserId, projectId, ETypeAssess.SELF);
+        if (assesses.isEmpty()) {
+            switch (assessmentType) {
+                case SELF -> throw new AppException(ErrorCode.SELF_ASSESS_IS_NOT_EXIST);
+                case TEAM -> {
+                    // todo: trường hợp team chỉ có 2 người sẽ không có đánh giá của team -> không trả về lỗi
+                    if (userService.getAllUserHadSameProject(toUserId).size() == 1) {
+                        return new ArrayList<>();
+                    }
+                    throw new AppException(ErrorCode.TEAM_ASSESS_IS_NOT_EXIST);
                 }
-            });
-        });
-
-        // 3. Trả về kết quả
-        return convertMapAvgToList(result);
-    }
-
-    public List<AverageValueInCriteria> getAverageValueOfCriteriaBySelf(Long userId) {
-        // 1. Lấy danh sách đánh giá SELF của userId
-        Assess assess = assessRepository.getAssessBySelf(userId);
-        AssessResDTO assessResDTO = assessMapper.toAssessResDto(assess);
-        assessResDTO.setAssessDetails(assessResDTO.getAssessDetails().stream()
-                .peek(assessDetail -> assessDetail.setAssessId(assessResDTO.getId()))
-                .collect(Collectors.toList()));
-        // 2. Tính giá trị trung bình của các tiêu chí (criteriaID giống nhau)
-        Map<Long, Double> result = new HashMap<>();
-        Map<Long, List<AssessDetailResDto>> groupedByCriteria = assessResDTO.getAssessDetails().stream()
-                .collect(Collectors.groupingBy(detail -> detail.getCriteria().getId()));
-
-        groupedByCriteria.forEach((criteriaId, assessDetails) -> {
-            double averageValue = assessDetails.stream()
-                    .mapToDouble(AssessDetailResDto::getValue)
-                    .average()
-                    .orElse(0.0);
-
-            result.put(criteriaId, averageValue);
-        });
-        // 3. Trả về kết quả
-        return convertMapAvgToList(result);
-    }
-
-
-    @Override
-    public List<AverageValueInCriteria> getAverageValueOfCriteriaByManager(Long userId) {
-        // find all assess of user
-        List<Assess> aList = assessRepository.findByToUser_Id(userId);
-        if (aList.isEmpty()) {
-            throw new AppException(ErrorCode.ASSESS_IS_NOT_EXIST);
-        }
-
-        // find all the assesses by manager
-        List<Assess> managerAssessesList = new ArrayList<>();
-        for (Assess a : aList) {
-            boolean isManager = a.getUser().getUserRoles().stream()
-                    .anyMatch(ur -> ur.getRole().getId() == ERole.MANAGER.getValue());
-            if (isManager) {
-                managerAssessesList.add(a);
+                case MANAGER -> throw new AppException(ErrorCode.MANAGER_ASSESS_IS_NOT_EXIST);
             }
         }
-        if (managerAssessesList.isEmpty()) {
-            throw new AppException(ErrorCode.MANAGER_ASSESS_IS_NOT_EXIST);
+
+        // 2. Tính giá trị trung bình của các tiêu chí (criteriaID giống nhau)
+        // tùy thuộc vào assessmentType sẽ có cách tính khác nhau
+
+        Map<Long, Double> averagePointPerCriteria = new HashMap<>(); // key: criteriaId, value: avg
+        switch (assessmentType) {
+            case SELF, MANAGER -> { // chỉ có 1 bản ghi -> điểm trung bình của 1 criteria
+                Assess assess = assesses.getFirst();
+                List<AssessDetail> assessDetails = assessDetailRepository.findByAssess_Id(assess.getId());
+
+                // group by criteriaId and get average point on scale 5
+                averagePointPerCriteria = assessDetails.stream()
+                        .collect(Collectors.groupingBy(
+                                ad -> ad.getCriteria().getId(),
+                                Collectors.averagingDouble(ad -> {
+                                    int value = ad.getValue();
+                                    int maxPoint = ad.getCriteria().getPoint();
+                                    return (double) value / maxPoint * 5;
+                                })
+                        ));
+            }
+            case TEAM -> { // có nhiều bản ghi -> cần tính trung bình
+                // mỗi assess có nhiều assessDetail
+                // ta có 1 list của list assessDetail
+                List<List<AssessDetail>> groupedByCriteria = assesses.stream()
+                        .map(assess -> assessDetailRepository.findByAssess_Id(assess.getId()))
+                        .toList();
+
+                // list chứa giá trị trung bình của từng criteria của từng assess
+                List<Map<Long, Double>> listOfAvgPointPerCriteria = new ArrayList<>();
+
+                // -> tính trung bình từng criteria của từng asssess, sau đó trung bình các giá trị đó
+                groupedByCriteria.forEach(assessDetails -> {
+                    Map<Long, Double> avgPointPerCriteria = assessDetails.stream()
+                            .collect(Collectors.groupingBy(
+                                    ad -> ad.getCriteria().getId(),
+                                    Collectors.averagingDouble(ad -> {
+                                        int value = ad.getValue();
+                                        int maxPoint = ad.getCriteria().getPoint();
+                                        return (double) value / maxPoint * 5;
+                                    })
+                            ));
+                    listOfAvgPointPerCriteria.add(avgPointPerCriteria); // add to list
+                });
+
+                // trung bình các giá trị của từng criteria của mọi assess
+                Map<Long, Double> avgPointPerCriteriaOfAllAssess = new HashMap<>();
+                avgPointPerCriteriaOfAllAssess = listOfAvgPointPerCriteria.stream()
+                        .flatMap(map -> map.entrySet().stream())
+                        .collect(Collectors.groupingBy(
+                                Map.Entry::getKey,
+                                Collectors.averagingDouble(Map.Entry::getValue)
+                        ));
+                averagePointPerCriteria = avgPointPerCriteriaOfAllAssess;
+            }
         }
-
-        // get the newest assess
-        Assess newestAssess = managerAssessesList.getLast();
-        // find all the assess detail of the newest assess. now the adList have the same assessId and assessmentDate
-        List<AssessDetail> adList = assessDetailRepository
-                .findByAssess_IdAndAssess_AssessmentDate(
-                        newestAssess.getId(),
-                        newestAssess.getAssessmentDate()
-                );
-
-        //group by assessId and criteriaId and get average point on scale 5
-        Map<Long, Double> averagePointPerCriteria = adList.stream()
-                .collect(Collectors.groupingBy(
-                        ad -> ad.getCriteria().getId(),
-                        Collectors.averagingDouble(AssessDetail::getValue)
-                ));
-
         return convertMapAvgToList(averagePointPerCriteria);
     }
 
     @Override
-    public OverallRatedResDto getOverallRatedOfAUser(Long userId) {
-        OverallRatedResDto result = new OverallRatedResDto();
+    public OverallRatedResDto getOverallRatedOfAUserInAllProject(Long toUserId) {
+        // get all project of user
+        List<Long> projectIds = userProjectRepository.findAllByUserId(toUserId).stream()
+                .map(userProject -> userProject.getProject().getId())
+                .toList();
+
+        return null;
+    }
+
+    @Override
+    public OverallRatedResDto getOverallRatedOfAUserByProject(Long toUserId, Long projectId) {
+
         // get average value of criteria by team
-        List<AverageValueInCriteria> averageValueByTeam = getAverageValueOfCriteriaByTeam(userId);
+        List<AverageValueInCriteria> averageValueByTeam = getAvgValueOfCriteriaByToUserIdAndProjectIdAndAssessmentType(toUserId, projectId, ETypeAssess.TEAM);
         // get average value of criteria by self
-        List<AverageValueInCriteria> averageValueBySelf = getAverageValueOfCriteriaBySelf(userId);
+        List<AverageValueInCriteria> averageValueBySelf = getAvgValueOfCriteriaByToUserIdAndProjectIdAndAssessmentType(toUserId, projectId, ETypeAssess.SELF);
         // get average value of criteria by manager
-        List<AverageValueInCriteria> averageValueByManager = getAverageValueOfCriteriaByManager(userId);
+        List<AverageValueInCriteria> averageValueByManager = getAvgValueOfCriteriaByToUserIdAndProjectIdAndAssessmentType(toUserId, projectId, ETypeAssess.MANAGER);
 
         // Step 1: Collect all unique criteriaIds
         Set<Long> allCriteriaIds = new HashSet<>();
@@ -156,6 +151,7 @@ public class RatedRankServiceImpl implements IRatedRankService {
         normalizeList(averageValueByManager, allCriteriaIds);
         normalizeList(averageValueBySelf, allCriteriaIds);
         normalizeList(averageValueByTeam, allCriteriaIds);
+
         // Step 3: sort all lists by criteria id
         averageValueByManager.sort(Comparator.comparing(AverageValueInCriteria::getCriteriaId));
         averageValueBySelf.sort(Comparator.comparing(AverageValueInCriteria::getCriteriaId));
@@ -215,6 +211,8 @@ public class RatedRankServiceImpl implements IRatedRankService {
         }
 
         // set list overall of criteria
+        OverallRatedResDto result = new OverallRatedResDto();
+
         result.setOverallOfCriteria(overallOfCriteria);
 
         // calculate overall point
@@ -230,6 +228,12 @@ public class RatedRankServiceImpl implements IRatedRankService {
         return result;
     }
 
+    /**
+     * Convert map to list and sort by criteriaId
+     *
+     * @param map map to convert
+     * @return list of AverageValueInCriteria
+     */
     private List<AverageValueInCriteria> convertMapAvgToList(Map<Long, Double> map) {
         List<AverageValueInCriteria> result = new ArrayList<>();
         map.forEach((criteriaId, avgValue) -> result.add(new AverageValueInCriteria(criteriaId, avgValue)));
