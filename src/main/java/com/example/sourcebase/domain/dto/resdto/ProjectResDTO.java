@@ -26,5 +26,6 @@ public class ProjectResDTO {
     LocalDate startDay;
     @DateTimeFormat(pattern = "dd-MM-yyyy")
     LocalDate endDay;
+    Long leaderId;
     List<UserProjectResDTO> userProjects;
 }
