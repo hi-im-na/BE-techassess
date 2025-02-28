@@ -1,13 +1,5 @@
 package com.example.sourcebase.service.impl;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.example.sourcebase.domain.Project;
 import com.example.sourcebase.domain.User;
 import com.example.sourcebase.domain.UserProject;
@@ -24,9 +16,15 @@ import com.example.sourcebase.repository.IUserProjectRepository;
 import com.example.sourcebase.repository.IUserRepository;
 import com.example.sourcebase.service.IProjectService;
 import com.example.sourcebase.util.ErrorCode;
-
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -113,6 +111,9 @@ public class ProjectService implements IProjectService {
         }
         userProjectRepository.delete(userProject);
     }
+
+
+
     @Override
     @Transactional
     public ProjectResDTO updateProject(Long id, ProjectReqDTO projectReqDTO) {

@@ -10,21 +10,19 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("api/projects")
-@CrossOrigin(origins = { "http://192.168.0.152:5000", "http://192.168.0.152:6123", "http://localhost:5000",
-        "http://localhost:6123" })
+@CrossOrigin(origins = {"http://192.168.0.152:5000", "http://192.168.0.152:6123", "http://localhost:5000", "http://localhost:6123"})
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 public class ProjectRestController {
     IProjectService projectService;
 
     @PostMapping("/add")
-    public ResponseEntity<ResponseData<?>> createProject(@Valid @RequestBody ProjectReqDTO projectRequest,
-            BindingResult bindingResult) {
+    public ResponseEntity<ResponseData<?>> createProject(@Valid @RequestBody ProjectReqDTO projectRequest, BindingResult bindingResult) {
         return ResponseEntity.ok(
                 ResponseData.builder()
                         .code(SuccessCode.CREATED.getCode())
@@ -43,16 +41,15 @@ public class ProjectRestController {
                         .build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseData<?>> deleteProject(@PathVariable Long id,
-            @RequestParam(required = false) Long userId) {
-        if (userId != null) {
-            projectService.deleteEmployeeFromProject(id, userId);
-        } else {
-            projectService.deleteProject(id);
-        }
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+@DeleteMapping("/{id}")
+public ResponseEntity<ResponseData<?>> deleteProject(@PathVariable Long id, @RequestParam(required = false) Long userId) {
+    if (userId != null) {
+        projectService.deleteEmployeeFromProject(id, userId);
+    } else {
+        projectService.deleteProject(id);
     }
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+}
 
     @GetMapping("/{id}")
     public ResponseEntity<ResponseData<?>> getProjectById(@PathVariable Long id) {
@@ -65,8 +62,7 @@ public class ProjectRestController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseData<?>> updateProject(@PathVariable Long id,
-            @RequestBody ProjectReqDTO projectReqDTO) {
+    public ResponseEntity<ResponseData<?>> updateProject(@PathVariable Long id, @RequestBody ProjectReqDTO projectReqDTO) {
         ProjectResDTO updatedProject = projectService.updateProject(id, projectReqDTO);
         return ResponseEntity.ok(
                 ResponseData.builder()
