@@ -4,9 +4,11 @@ import com.example.sourcebase.domain.Project;
 import com.example.sourcebase.domain.User;
 import com.example.sourcebase.domain.UserProject;
 import com.example.sourcebase.domain.dto.reqdto.ProjectReqDTO;
+import com.example.sourcebase.domain.dto.resdto.DepartmentResDTO;
 import com.example.sourcebase.domain.dto.resdto.ProjectResDTO;
 import com.example.sourcebase.domain.dto.resdto.user.UserProjectResDTO;
 import com.example.sourcebase.exception.AppException;
+import com.example.sourcebase.mapper.DepartmentMapper;
 import com.example.sourcebase.mapper.ProjectMapper;
 import com.example.sourcebase.mapper.UserMapper;
 import com.example.sourcebase.repository.IProjectRepository;
@@ -35,6 +37,7 @@ public class ProjectService implements IProjectService {
 
     ProjectMapper projectMapper;
     UserMapper userMapper;
+    DepartmentMapper departmentMapper;
 
     @Override
     @Transactional
@@ -68,7 +71,6 @@ public class ProjectService implements IProjectService {
 
         return projectResDTOS;
     }
-
 
     @Override
     public ProjectResDTO getProjectById(Long id) {
@@ -129,6 +131,38 @@ public class ProjectService implements IProjectService {
 
     @Override
     @Transactional
+    public ProjectResDTO updateLeader(Long id, ProjectReqDTO projectReqDTO) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PROJECT_NOT_FOUND));
+        if (projectReqDTO.getLeaderId() != null) {
+            User leader = userRepository.findById(projectReqDTO.getLeaderId())
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+            project.setLeader(leader);
+        } else {
+            project.setLeader(null);
+        }
+        Project updatedProject = projectRepository.save(project);
+        DepartmentResDTO departmentResDTO = departmentMapper.toResponseDTO(updatedProject.getDepartment());
+
+        List<UserProjectResDTO> userProjectResDTOS = project.getUserProjects().stream()
+                .map(userProject -> {
+                    UserProjectResDTO userProjectResDTO = new UserProjectResDTO();
+                    userProjectResDTO.setProjectId(project.getId());
+                    userProjectResDTO.setUserId(userProject.getUser().getId());
+                    userProjectResDTO.setDepartment(departmentResDTO);
+                    return userProjectResDTO;
+                })
+                .collect(Collectors.toList());
+
+        ProjectResDTO responseDTO = projectMapper.toResponseDTO(updatedProject);
+        responseDTO.setUserProjects(userProjectResDTOS);
+        responseDTO.setLeaderId(updatedProject.getLeader() != null ? updatedProject.getLeader().getId() : null);
+
+        return responseDTO;
+    }
+
+    @Override
+    @Transactional
     public ProjectResDTO addEmployeesToProject(Long projectId, ProjectReqDTO requestDTO) {
         User leader = userRepository.findById((requestDTO.getLeaderId()))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -173,7 +207,6 @@ public class ProjectService implements IProjectService {
         responseDTO.setLeaderId(leader.getId());
         return responseDTO;
     }
-
 
     private void validateProject(ProjectReqDTO projectReqDTO) {
 

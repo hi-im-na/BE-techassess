@@ -15,6 +15,9 @@ public interface DepartmentMapper {
 
     Department toEntity(DepartmentResDTO resDTO);
 
+    @Named("toDepartmentDTO")
+    DepartmentResDTO toResponseDTO(Department department);
+
     @Mapping(target = "criteria", source = "criterias")
     DepartmentResDTO toDepartmentResDTO(Department department);
 

@@ -10,8 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
@@ -20,7 +20,6 @@ import org.springframework.validation.BindingResult;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 public class ProjectRestController {
     IProjectService projectService;
-
 
     @PostMapping("/add")
     public ResponseEntity<ResponseData<?>> createProject(@Valid @RequestBody ProjectReqDTO projectRequest, BindingResult bindingResult) {
@@ -73,11 +72,22 @@ public ResponseEntity<ResponseData<?>> deleteProject(@PathVariable Long id, @Req
                         .build());
     }
 
+    @PutMapping("/updateLeader/{projectId}")
+    public ResponseEntity<ResponseData<?>> updateLeader(@PathVariable Long projectId,
+            @RequestBody ProjectReqDTO projectReqDTO) {
+        ProjectResDTO updatedProject = projectService.updateLeader(projectId, projectReqDTO);
+        return ResponseEntity.ok(
+                ResponseData.builder()
+                        .code(SuccessCode.UPDATE_SUCCESSFUL.getCode())
+                        .message(SuccessCode.UPDATE_SUCCESSFUL.getMessage())
+                        .data(updatedProject)
+                        .build());
+    }
+
     @PostMapping("/{projectId}/employees")
     public ResponseEntity<ResponseData<?>> addEmployeesToProject(
             @PathVariable Long projectId,
-            @RequestBody ProjectReqDTO requestDTO
-    ) {
+            @RequestBody ProjectReqDTO requestDTO) {
         ProjectResDTO responseDTO = projectService.addEmployeesToProject(projectId, requestDTO);
         return ResponseEntity.ok(
                 ResponseData.builder()
