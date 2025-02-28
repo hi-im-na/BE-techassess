@@ -69,6 +69,16 @@ public class ProjectRestController {
                             .data(updatedProject)
                             .build());
         }
+    @PutMapping("/updateLeader/{projectId}")
+    public ResponseEntity<ResponseData<?>> updateLeader(@PathVariable Long projectId, @RequestBody ProjectReqDTO projectReqDTO) {
+        ProjectResDTO updatedProject = projectService.updateLeader(projectId, projectReqDTO);
+        return ResponseEntity.ok(
+                ResponseData.builder()
+                        .code(SuccessCode.UPDATE_SUCCESSFUL.getCode())
+                        .message(SuccessCode.UPDATE_SUCCESSFUL.getMessage())
+                        .data(updatedProject)
+                        .build());
+    }
     @PostMapping("/{projectId}/employees")
     public ResponseEntity<ResponseData<?>> addEmployeesToProject(
             @PathVariable Long projectId,
