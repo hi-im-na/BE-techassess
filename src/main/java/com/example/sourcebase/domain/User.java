@@ -45,7 +45,8 @@ public class User extends BaseEntity {
     Rank rank;
     Long departmentId;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "leader", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ToString.Exclude
     List<Project> project;
 
 }

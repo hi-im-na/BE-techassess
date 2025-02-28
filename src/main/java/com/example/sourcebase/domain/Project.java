@@ -41,6 +41,5 @@ public class Project {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id")
-
-    User user;
+    User leader;
 }
