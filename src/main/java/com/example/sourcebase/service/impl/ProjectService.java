@@ -60,8 +60,9 @@ public class ProjectService implements IProjectService {
         for (Project project : projects) {
             // Gọi hàm getProjectById để lấy ProjectResDTO cho từng dự án
             ProjectResDTO projectResDTO = getProjectById(project.getId());
-            if (project.getUser() != null && project.getUser().getId() != null) {
-                projectResDTO.setLeaderId(project.getUser().getId());}
+            if (project.getLeader() != null && project.getDepartment().getId() != null) {
+                projectResDTO.setLeaderId(project.getLeader().getId());
+            }
             projectResDTOS.add(projectResDTO);
         }
 
@@ -87,14 +88,29 @@ public class ProjectService implements IProjectService {
 
     @Override
     @Transactional
-    public boolean deleteProject(Long id) {
-        if (projectRepository.existsById(id)) {
-            projectRepository.deleteById(id);
-            return true;
-        } else {
-            return false;
+    public void deleteProject(Long id) {
+        if (!projectRepository.existsById(id)) {
+            throw new AppException(ErrorCode.PROJECT_NOT_FOUND);
         }
+        projectRepository.deleteById(id);
     }
+
+    @Override
+    @Transactional
+    public void deleteEmployeeFromProject(Long projectId, Long userId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROJECT_NOT_FOUND));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        UserProject userProject = userProjectRepository.findByProject_IdAndUser_Id(projectId, userId);
+        if (userProject == null) {
+            throw new AppException(ErrorCode.USER_PROJECT_NOT_FOUND);
+        }
+        userProjectRepository.delete(userProject);
+    }
+
+
 
     @Override
     @Transactional
@@ -119,7 +135,7 @@ public class ProjectService implements IProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new AppException(ErrorCode.PROJECT_NOT_FOUND));
 
-        project.setUser(leader);
+        project.setLeader(leader);
         projectRepository.save(project);
         List<User> usersToAdd = userRepository.findAllById(requestDTO.getEmployeeIds());
 

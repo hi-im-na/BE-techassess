@@ -8,6 +8,7 @@ import com.example.sourcebase.util.SuccessCode;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.BindingResult;
@@ -40,15 +41,16 @@ public class ProjectRestController {
                         .data(projectService.getAll())
                         .build());
     }
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseData<?>> deleteProject(@PathVariable Long id) {
-        return ResponseEntity.ok(
-                ResponseData.builder()
-                        .code(SuccessCode.DELETE_SUCCESSFUL.getCode())
-                        .message(SuccessCode.DELETE_SUCCESSFUL.getMessage())
-                        .data(projectService.deleteProject(id))
-                        .build());
+
+@DeleteMapping("/{id}")
+public ResponseEntity<ResponseData<?>> deleteProject(@PathVariable Long id, @RequestParam(required = false) Long userId) {
+    if (userId != null) {
+        projectService.deleteEmployeeFromProject(id, userId);
+    } else {
+        projectService.deleteProject(id);
     }
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+}
 
     @GetMapping("/{id}")
     public ResponseEntity<ResponseData<?>> getProjectById(@PathVariable Long id) {
@@ -59,16 +61,18 @@ public class ProjectRestController {
                         .data(projectService.getProjectById(id))
                         .build());
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<ResponseData<?>> updateProject(@PathVariable Long id, @RequestBody ProjectReqDTO projectReqDTO) {
         ProjectResDTO updatedProject = projectService.updateProject(id, projectReqDTO);
-            return ResponseEntity.ok(
-                    ResponseData.builder()
-                            .code(SuccessCode.UPDATE_SUCCESSFUL.getCode())
-                            .message(SuccessCode.UPDATE_SUCCESSFUL.getMessage())
-                            .data(updatedProject)
-                            .build());
-        }
+        return ResponseEntity.ok(
+                ResponseData.builder()
+                        .code(SuccessCode.UPDATE_SUCCESSFUL.getCode())
+                        .message(SuccessCode.UPDATE_SUCCESSFUL.getMessage())
+                        .data(updatedProject)
+                        .build());
+    }
+
     @PostMapping("/{projectId}/employees")
     public ResponseEntity<ResponseData<?>> addEmployeesToProject(
             @PathVariable Long projectId,
