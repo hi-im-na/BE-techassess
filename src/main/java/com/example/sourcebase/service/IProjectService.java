@@ -22,4 +22,6 @@ public interface IProjectService {
     ProjectResDTO updateProject(Long id, ProjectReqDTO projectReqDTO);
 
     ProjectResDTO addEmployeesToProject(Long projectId, ProjectReqDTO requestDTO);
+
+    ProjectResDTO updateLeader(Long projectId, ProjectReqDTO requestDTO);
 }
