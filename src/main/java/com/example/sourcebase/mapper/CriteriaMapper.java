@@ -13,8 +13,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import java.util.Set;
-
+import java.util.List;
 import java.util.Set;
 
 @Mapper(componentModel = "spring")
@@ -43,4 +42,6 @@ public interface CriteriaMapper {
     Set<Criteria> reqToEntitySet(Set<CriteriaReqDTO> criteriaReqDTOS);
 
     Set<Criteria> resToEntitySet(Set<CriteriaResDTO> criteriaResDTOS);
+
+    List<CriteriaResDTO> toCriteriaResDTOList(List<Criteria> criteriaList);
 }

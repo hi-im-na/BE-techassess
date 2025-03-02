@@ -3,7 +3,6 @@ package com.example.sourcebase.service.impl;
 import com.example.sourcebase.domain.Assess;
 import com.example.sourcebase.domain.Project;
 import com.example.sourcebase.domain.User;
-import com.example.sourcebase.domain.UserRole;
 import com.example.sourcebase.domain.dto.reqdto.AssessReqDTO;
 import com.example.sourcebase.domain.dto.resdto.AssessResDTO;
 import com.example.sourcebase.domain.enumeration.ETypeAssess;
@@ -40,22 +39,38 @@ public class AssessService implements IAssessService {
     ICriteriaRepository criteriaRepository;
     IQuestionRepository questionRepository;
     IProjectRepository projectRepository;
+    UserService userService;
 
     @Override
     @Transactional
     public AssessResDTO updateAssess(AssessReqDTO assessReqDto) {
         User user = userRepository.findById(Long.valueOf(assessReqDto.getUserId()))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        ETypeAssess type = determineAssessmentType(assessReqDto, user.getUserRoles());
+        User toUser = userRepository.findById(Long.valueOf(assessReqDto.getToUserId()))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Project project = projectRepository.findById(Long.valueOf(assessReqDto.getProjectId()))
+                .orElseThrow(() -> new AppException(ErrorCode.PROJECT_NOT_FOUND));
+        ETypeAssess type = determineAssessmentType(assessReqDto, project.getLeader().getId());
+
+        // nếu là leader đánh giá, kiểm tra thaành viên trong project đã đánh giá chưa
+        if (type.equals(ETypeAssess.MANAGER)) {
+            if (!assessRepository.existsByToUser_IdAndProject_IdAndAssessmentType(toUser.getId(), project.getId(), ETypeAssess.SELF)) {
+                throw new AppException(ErrorCode.SELF_ASSESS_IS_NOT_EXIST);
+            }
+
+            if (!assessRepository.existsByToUser_IdAndProject_IdAndAssessmentType(toUser.getId(), project.getId(), ETypeAssess.TEAM)) {
+                throw new AppException(ErrorCode.TEAM_ASSESS_IS_NOT_EXIST);
+            } else {
+                int numberOfAssessOfTeamMember = assessRepository.countByToUser_IdAndProject_IdAndAssessmentType(toUser.getId(), project.getId(), ETypeAssess.TEAM);
+                if (numberOfAssessOfTeamMember < userService.getAllUserHadSameProject(toUser.getId(), project.getId()).size() - 1) {
+                    throw new AppException(ErrorCode.TEAM_ASSESS_NOT_FULFILLED);
+                }
+            }
+        }
 
         Assess assess = assessMapper.toAssess(assessReqDto);
         assess.setAssessmentType(type);
         assess.setAssessmentDate(LocalDate.now());
-
-        Long projectId = Long.valueOf(assessReqDto.getProjectId());
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new AppException(ErrorCode.PROJECT_NOT_FOUND));
-        assess.setProject(project);
 
         assess.getAssessDetails().forEach(ad -> {
             ad.setQuestion(questionRepository.findById(ad.getQuestion().getId()).orElse(null));
@@ -67,11 +82,11 @@ public class AssessService implements IAssessService {
         return assessMapper.toAssessResDto(assess);
     }
 
-    private ETypeAssess determineAssessmentType(AssessReqDTO assessReqDto, List<UserRole> userRoles) {
+    private ETypeAssess determineAssessmentType(AssessReqDTO assessReqDto, Long leaderId) {
         if (assessReqDto.getToUserId().equals(assessReqDto.getUserId())) {
             return ETypeAssess.SELF;
         }
-        return userRoles.stream().anyMatch(item -> item.getRole().getName().equalsIgnoreCase("Manager"))
+        return leaderId.equals(Long.valueOf(assessReqDto.getUserId()))
                 ? ETypeAssess.MANAGER
                 : ETypeAssess.TEAM;
     }
@@ -95,8 +110,8 @@ public class AssessService implements IAssessService {
     }
 
     @Override
-    public AssessResDTO getAssess(Long userId,Long projectId) {
-        return assessMapper.toAssessResDto(assessRepository.findByToUserIdAndAssessmentTypeAndProjectId(userId, ETypeAssess.SELF,projectId));
+    public AssessResDTO getAssess(Long userId, Long projectId) {
+        return assessMapper.toAssessResDto(assessRepository.findByToUserIdAndAssessmentTypeAndProjectId(userId, ETypeAssess.SELF, projectId));
     }
 
     @Override

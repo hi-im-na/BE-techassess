@@ -39,6 +39,9 @@ public class RatedRankServiceImpl implements IRatedRankService {
 
     /**
      * Lấy list giá trị trung bình của các tiêu chí dựa trên toUserId, projectId và assessmentType
+     * <p>
+     * cách tính giá trị trung bình của các tiêu chí: <br>
+     * -
      *
      * @param toUserId       người được đánh giá
      * @param projectId      dự án
@@ -48,7 +51,7 @@ public class RatedRankServiceImpl implements IRatedRankService {
     private List<AverageValueInCriteria> getAvgValueOfCriteriaByToUserIdAndProjectIdAndAssessmentType(Long toUserId, Long projectId, ETypeAssess assessmentType) {
         // 1. Lấy danh sách đánh giá dựa trên toUserId, projectId và assessmentType
         // lúc này bản ghi đánh giá sẽ có cùng projectId, toUserId và assessmentType
-        List<Assess> assesses = assessRepository.findAllByToUser_IdAndProject_IdAndAssessmentType(toUserId, projectId, ETypeAssess.SELF);
+        List<Assess> assesses = assessRepository.findAllByToUser_IdAndProject_IdAndAssessmentType(toUserId, projectId, assessmentType);
         if (assesses.isEmpty()) {
             switch (assessmentType) {
                 case SELF -> throw new AppException(ErrorCode.SELF_ASSESS_IS_NOT_EXIST);
@@ -76,14 +79,29 @@ public class RatedRankServiceImpl implements IRatedRankService {
                 averagePointPerCriteria = assessDetails.stream()
                         .collect(Collectors.groupingBy(
                                 ad -> ad.getCriteria().getId(),
-                                Collectors.averagingDouble(ad -> {
-                                    int value = ad.getValue();
-                                    int maxPoint = ad.getCriteria().getPoint();
-                                    return (double) value / maxPoint * 5;
-                                })
+                                Collectors.collectingAndThen( // xử lý tính tổng criteria dựa trên trọng số của question
+                                        Collectors.toList(),
+                                        (ads -> { // cùng criteriaId
+                                            // Nếu criteria không có question thì trả về 0
+                                            // Nếu criteria có question thì điểm cri thang 5 = tổng điểm thực các câu hỏi / điểm của criteria * 5
+                                            double criteriaAvgS5;
+
+                                            if (ads.getFirst().getQuestion() == null) { // trường hợp criteria không có question
+                                                return 0D;
+                                            }
+
+                                            double cPoint = ads.getFirst().getCriteria().getPoint();
+                                            double cRealPoint = ads.stream()
+                                                    .mapToDouble(ad -> (double) ad.getValue() / 5 * ad.getQuestion().getPoint())
+                                                    .sum();
+
+                                            criteriaAvgS5 = cRealPoint / cPoint * 5;
+                                            return criteriaAvgS5;
+                                        })
+                                )
                         ));
             }
-            case TEAM -> { // có nhiều bản ghi -> cần tính trung bình
+            case TEAM -> { // có nhiều assess -> cần tính trung bình của 'trung bình 1 criteria' của các assess
                 // mỗi assess có nhiều assessDetail
                 // ta có 1 list của list assessDetail
                 List<List<AssessDetail>> groupedByCriteria = assesses.stream()
@@ -94,15 +112,30 @@ public class RatedRankServiceImpl implements IRatedRankService {
                 List<Map<Long, Double>> listOfAvgPointPerCriteria = new ArrayList<>();
 
                 // -> tính trung bình từng criteria của từng asssess, sau đó trung bình các giá trị đó
-                groupedByCriteria.forEach(assessDetails -> {
-                    Map<Long, Double> avgPointPerCriteria = assessDetails.stream()
+                groupedByCriteria.forEach(assessDetailsOfAnAssess -> {
+                    Map<Long, Double> avgPointPerCriteria = assessDetailsOfAnAssess.stream()
                             .collect(Collectors.groupingBy(
-                                    ad -> ad.getCriteria().getId(),
-                                    Collectors.averagingDouble(ad -> {
-                                        int value = ad.getValue();
-                                        int maxPoint = ad.getCriteria().getPoint();
-                                        return (double) value / maxPoint * 5;
-                                    })
+                                    ad -> ad.getCriteria().getId(), // group by criteriaId
+                                    Collectors.collectingAndThen( // xử lý tính tổng criteria dựa trên trọng số của question
+                                            Collectors.toList(),
+                                            (ads -> { // cùng criteriaId
+                                                // Nếu criteria không có question thì trả về 0
+                                                // Nếu criteria có question thì điểm cri thang 5 = tổng điểm thực các câu hỏi / điểm của criteria * 5
+                                                double criteriaAvgS5;
+
+                                                if (ads.getFirst().getQuestion() == null) { // trường hợp criteria không có question
+                                                    return 0D;
+                                                }
+
+                                                double cPoint = ads.getFirst().getCriteria().getPoint();
+                                                double cRealPoint = ads.stream()
+                                                        .mapToDouble(ad -> (double) ad.getValue() / 5 * ad.getQuestion().getPoint())
+                                                        .sum();
+
+                                                criteriaAvgS5 = cRealPoint / cPoint * 5;
+                                                return criteriaAvgS5;
+                                            })
+                                    )
                             ));
                     listOfAvgPointPerCriteria.add(avgPointPerCriteria); // add to list
                 });
@@ -128,16 +161,27 @@ public class RatedRankServiceImpl implements IRatedRankService {
                 .map(userProject -> userProject.getProject().getId())
                 .toList();
 
-        return null;
+        // get overall rated of a user by project
+        List<OverallRatedResDto> overallRatedResDtos = projectIds.stream()
+                .map(projectId -> getOverallRatedOfAUserByProject(toUserId, projectId))
+                .toList();
+
+        // normalize each list
+        List<OverallOfACriterion> overallOfCriteria = new ArrayList<>();
+        for (OverallRatedResDto overallRatedResDto : overallRatedResDtos) {
+            overallOfCriteria.addAll(overallRatedResDto.getOverallOfCriteria());
+        }
+
+
+        return getOverallRatedOfAUserByProject(toUserId, projectIds.getFirst());
     }
 
     @Override
     public OverallRatedResDto getOverallRatedOfAUserByProject(Long toUserId, Long projectId) {
-
-        // get average value of criteria by team
-        List<AverageValueInCriteria> averageValueByTeam = getAvgValueOfCriteriaByToUserIdAndProjectIdAndAssessmentType(toUserId, projectId, ETypeAssess.TEAM);
         // get average value of criteria by self
         List<AverageValueInCriteria> averageValueBySelf = getAvgValueOfCriteriaByToUserIdAndProjectIdAndAssessmentType(toUserId, projectId, ETypeAssess.SELF);
+        // get average value of criteria by team
+        List<AverageValueInCriteria> averageValueByTeam = getAvgValueOfCriteriaByToUserIdAndProjectIdAndAssessmentType(toUserId, projectId, ETypeAssess.TEAM);
         // get average value of criteria by manager
         List<AverageValueInCriteria> averageValueByManager = getAvgValueOfCriteriaByToUserIdAndProjectIdAndAssessmentType(toUserId, projectId, ETypeAssess.MANAGER);
 

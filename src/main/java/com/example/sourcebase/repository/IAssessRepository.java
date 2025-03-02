@@ -36,4 +36,8 @@ public interface IAssessRepository extends JpaRepository<Assess, Long> {
      */
     List<Assess> findByToUser_Id(Long userId);
 
+    boolean existsByToUser_IdAndProject_IdAndAssessmentType(Long toUserId, Long projectId, ETypeAssess assessmentType);
+
+    @Query("SELECT COUNT(a) FROM Assess a WHERE a.toUser.id = :toUserId AND a.project.id = :projectId AND a.assessmentType = :assessmentType")
+    int countByToUser_IdAndProject_IdAndAssessmentType(Long toUserId, Long projectId, ETypeAssess assessmentType);
 }
