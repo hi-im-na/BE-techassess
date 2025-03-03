@@ -92,8 +92,8 @@ public class AssessService implements IAssessService {
     }
 
     @Override
-    public List<AssessResDTO> getListAssessOfUserId(Long userId) {
-        return assessRepository.getListAssessOfUserId(userId).stream()
+    public List<AssessResDTO> getListAssessOfUserId(Long userId, Long projectId) {
+        return assessRepository.findByToUser_IdAndProject_Id(userId, projectId).stream()
                 .map(assess -> {
                     AssessResDTO assessResDTO = assessMapper.toAssessResDto(assess);
                     assessResDTO.setAssessDetails(assessResDTO.getAssessDetails().stream()
@@ -115,8 +115,8 @@ public class AssessService implements IAssessService {
     }
 
     @Override
-    public List<AssessResDTO> getListAssessByUserId(Long userId) {
-        return assessRepository.getListAssessByUserId(userId).stream()
+    public List<AssessResDTO> getListAssessByUserId(Long userId,Long projectId) {
+        return assessRepository.findByUser_IdAndProject_Id(userId, projectId).stream()
                 .map(assess -> {
                     AssessResDTO assessResDTO = assessMapper.toAssessResDto(assess);
                     assessResDTO.setAssessDetails(assessResDTO.getAssessDetails().stream()

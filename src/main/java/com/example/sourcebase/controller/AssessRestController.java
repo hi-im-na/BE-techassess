@@ -35,23 +35,23 @@ public class AssessRestController {
     }
 
     @GetMapping("/list-assess-of-user/{userId}")
-    public ResponseEntity<ResponseData<?>> getListAssessOfUserId(@PathVariable Long userId) {
+    public ResponseEntity<ResponseData<?>> getListAssessOfUserId(@PathVariable Long userId,@RequestParam(required = false) Long projectId) {
         return ResponseEntity.ok(
                 ResponseData.builder()
                         .code(SuccessCode.GET_SUCCESSFUL.getCode())
                         .message(SuccessCode.GET_SUCCESSFUL.getMessage())
-                        .data(assessService.getListAssessOfUserId(userId))
+                        .data(assessService.getListAssessOfUserId(userId, projectId))
                         .build()
         );
     }
 
     @GetMapping("/list-assess-by-user/{userId}")
-    public ResponseEntity<ResponseData<?>> getListAssessByUserId(@PathVariable Long userId) {
+    public ResponseEntity<ResponseData<?>> getListAssessByUserId(@PathVariable Long userId,@RequestParam(required = false) Long projectId) {
         return ResponseEntity.ok(
                 ResponseData.builder()
                         .code(SuccessCode.GET_SUCCESSFUL.getCode())
                         .message(SuccessCode.GET_SUCCESSFUL.getMessage())
-                        .data(assessService.getListAssessByUserId(userId))
+                        .data(assessService.getListAssessByUserId(userId,projectId))
                         .build()
         );
     }
