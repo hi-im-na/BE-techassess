@@ -12,6 +12,8 @@ public interface IAssessRepository extends JpaRepository<Assess, Long> {
     @Query("SELECT a FROM Assess a WHERE a.toUser.id = :userId")
     List<Assess> getListAssessOfUserId(Long userId);
 
+    List<Assess> findByToUser_IdAndProject_Id(Long toUserId, Long projectId);
+
 //    Assess findByToUserIdAndAssessmentType(Long userId, ETypeAssess type);
 
     Assess findByToUserIdAndAssessmentTypeAndProjectId(Long toUserId, ETypeAssess assessmentType, Long projectId);
@@ -19,6 +21,7 @@ public interface IAssessRepository extends JpaRepository<Assess, Long> {
     @Query("SELECT a FROM Assess a WHERE a.user.id = :userId")
     List<Assess> getListAssessByUserId(Long userId);
 
+    List<Assess> findByUser_IdAndProject_Id(Long userId, Long projectId);
     @Query("SELECT a FROM Assess a WHERE a.toUser.id = :toUserId AND a.assessmentType = 'SELF'")
     Assess getAssessBySelf(Long toUserId);
 
