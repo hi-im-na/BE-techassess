@@ -48,6 +48,7 @@ public enum ErrorCode {
     TEAM_ASSESS_NOT_FULFILLED(40408, "Chưa đủ bản đánh giá của các thành viên trong team", HttpStatus.NOT_FOUND),
 
     CRITERIA_ID_NOT_MATCH(40905, "Criteria id not match", HttpStatus.CONFLICT),
+    LEADER_CANNOT_DELETE_IN_PROJECT(40003, "Dự án cần phải có ít nhất 1 leader", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;
