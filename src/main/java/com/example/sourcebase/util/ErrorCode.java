@@ -44,7 +44,8 @@ public enum ErrorCode {
     MANAGER_ASSESS_IS_NOT_EXIST(40404, "Không có đánh giá của quản lý", HttpStatus.NOT_FOUND),
     TEAM_ASSESS_IS_NOT_EXIST(40405, "Không có đánh giá của team", HttpStatus.NOT_FOUND),
     SELF_ASSESS_IS_NOT_EXIST(40406, "Không có đánh giá của bản thân", HttpStatus.NOT_FOUND),
-    USER_PROJECT_NOT_FOUND(40407, "User not found in project", HttpStatus.NOT_FOUND),
+    USER_PROJECT_NOT_FOUND(40407, "Không tìm thấy thành viên này trong dự án", HttpStatus.NOT_FOUND),
+    TEAM_ASSESS_NOT_FULFILLED(40408, "Chưa đủ bản đánh giá của các thành viên trong team", HttpStatus.NOT_FOUND),
 
     CRITERIA_ID_NOT_MATCH(40905, "Criteria id not match", HttpStatus.CONFLICT),
     ;

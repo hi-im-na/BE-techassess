@@ -1,5 +1,6 @@
 package com.example.sourcebase.service.impl;
 
+import com.example.sourcebase.domain.Criteria;
 import com.example.sourcebase.domain.Department;
 import com.example.sourcebase.domain.dto.reqdto.DepartmentReqDTO;
 import com.example.sourcebase.domain.dto.resdto.DepartmentResDTO;
@@ -19,7 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -95,7 +96,14 @@ public class DepartmentService implements IDepartmentService {
         Department department = departmentRepository
                 .findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.DEPARTMENT_NOT_FOUND));
-        return departmentMapper.toDepartmentResDTO(department);
-    }
+        // Sort the criteria set
 
+        List<Criteria> criteriaList = new ArrayList<>(department.getCriterias());
+        criteriaList.sort(Criteria::compareTo);
+
+        DepartmentResDTO resDTO = departmentMapper.toDepartmentResDTO(department);
+        resDTO.setCriteria(criteriaMapper.toCriteriaResDTOList(criteriaList));
+
+        return resDTO;
+    }
 }

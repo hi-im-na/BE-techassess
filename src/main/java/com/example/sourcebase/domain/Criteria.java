@@ -5,9 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "criterias")
@@ -16,7 +14,7 @@ import java.util.Set;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Criteria {
+public class Criteria implements Comparable<Criteria> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -33,8 +31,28 @@ public class Criteria {
 
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
+
+    /**
+     * Compare two criteria by their id;
+     * <br>
+     * if the list of questions is empty,
+     * the criteria with questions will be greater than the criteria without questions.
+     *
+     * @param o the object to be compared.
+     * @return
+     */
+    @Override
+    public int compareTo(Criteria o) {
+        if (this.getQuestions().isEmpty() && !o.getQuestions().isEmpty()) {
+            return 1;
+        } else if (!this.getQuestions().isEmpty() && o.getQuestions().isEmpty()) {
+            return -1;
+        } else {
+            return this.getId().compareTo(o.getId());
+        }
+    }
 }
