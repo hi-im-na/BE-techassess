@@ -47,7 +47,7 @@ public class ProjectService implements IProjectService {
         }
         validateProject(projectRequest);
         Project project = projectMapper.toEntity(projectRequest);
-
+        project.setLeader(null);
         Project savedProject = projectRepository.save(project);
 
         return projectMapper.toResponseDTO(savedProject);
@@ -74,6 +74,7 @@ public class ProjectService implements IProjectService {
 
     @Override
     public ProjectResDTO getProjectById(Long id) {
+        System.out.println("id cuar project: " + id);
         Project project = projectRepository.findById(id).orElse(null);
 
         ProjectResDTO projectResDTO = projectMapper.toResponseDTO(project);
