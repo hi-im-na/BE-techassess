@@ -104,7 +104,9 @@ public class ProjectService implements IProjectService {
                 .orElseThrow(() -> new AppException(ErrorCode.PROJECT_NOT_FOUND));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
+        if(project.getLeader().getId().equals(user.getId())) {
+            throw new AppException(ErrorCode.LEADER_CANNOT_DELETE_IN_PROJECT);
+        }
         UserProject userProject = userProjectRepository.findByProject_IdAndUser_Id(projectId, userId);
         if (userProject == null) {
             throw new AppException(ErrorCode.USER_PROJECT_NOT_FOUND);
